@@ -33,7 +33,9 @@ export default function Footer() {
               <li><Link href="/" className="hover:text-emerald-400 transition-colors">Ballina</Link></li>
               <li><Link href="/dashboard/pronat" className="hover:text-emerald-400 transition-colors">Pronat e Mia</Link></li>
               <li><Link href="/pagesa/prop-ks-101" className="hover:text-emerald-400 transition-colors">Publiko Pronë (7 €)</Link></li>
-              <li><Link href="/dashboard/pagesat" className="hover:text-emerald-400 transition-colors">Historiku i Pagesave</Link></li>
+              <li><Link href="/krahaso" className="hover:text-emerald-400 transition-colors">Krahaso Pronat</Link></li>
+              <li><Link href="/kalkulatori" className="hover:text-emerald-400 transition-colors">Kalkulatori i Kredisë</Link></li>
+              <li><Link href="/ndihma" className="hover:text-emerald-400 transition-colors">Qendra e Ndihmës</Link></li>
               <li><Link href="/faq" className="hover:text-emerald-400 transition-colors">Pyetjet e Shpeshta (FAQ)</Link></li>
             </ul>
           </div>
