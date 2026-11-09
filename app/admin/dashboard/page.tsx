@@ -95,6 +95,10 @@ export default function AdminDashboardPage() {
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900">Qendra e Kontrollit</h1>
           </div>
           <div className="flex items-center gap-2">
+            <Link href="/admin/settings" className="text-xs font-semibold text-slate-600 bg-white border border-slate-200 px-3 py-2 rounded-xl hover:bg-slate-50 flex items-center gap-1.5">
+              <Settings className="w-3.5 h-3.5 text-slate-600" />
+              <span className="hidden sm:inline">Konfigurimet</span>
+            </Link>
             <Link href="/admin/system-health" className="text-xs font-semibold text-slate-600 bg-white border border-slate-200 px-3 py-2 rounded-xl hover:bg-slate-50 flex items-center gap-1.5">
               <Activity className="w-3.5 h-3.5 text-emerald-500" />
               <span className="hidden sm:inline">Sistemi</span>
