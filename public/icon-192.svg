@@ -1,0 +1,12 @@
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="192" height="192" rx="42" fill="#0B192C"/>
+  <rect x="24" y="24" width="144" height="144" rx="32" fill="url(#p_grad)"/>
+  <text x="96" y="118" fill="white" font-family="system-ui, -apple-system, sans-serif" font-size="96" font-weight="900" text-anchor="middle">P</text>
+  <circle cx="140" cy="52" r="12" fill="#10B981" stroke="#0B192C" stroke-width="4"/>
+  <defs>
+    <linearGradient id="p_grad" x1="24" y1="24" x2="168" y2="168" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#10B981"/>
+      <stop offset="1" stop-color="#0F766E"/>
+    </linearGradient>
+  </defs>
+</svg>

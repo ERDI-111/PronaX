@@ -1,4 +1,4 @@
-import { PronaXTestSuite } from '../lib/testing/suite.ts';
+import { PronaXTestSuite } from '../lib/testing/suite';
 
 async function main() {
   console.log('\n======================================================');

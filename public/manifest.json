@@ -1,0 +1,26 @@
+{
+  "name": "PronaX Kosovë — Tregu i Patundshmërive",
+  "short_name": "PronaX",
+  "description": "Tregu kryesor i pasurive të paluajtshme në të gjithë Republikën e Kosovës. Gjej banesa, shtëpi, troje dhe lokale me tarifë fikse 7.00 € për 30 ditë.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0B192C",
+  "theme_color": "#0B192C",
+  "orientation": "portrait-primary",
+  "lang": "sq",
+  "icons": [
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity", "shopping"]
+}

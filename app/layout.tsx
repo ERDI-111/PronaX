@@ -37,6 +37,12 @@ export const metadata: Metadata = {
     googleBot: { index: true, follow: true, 'max-image-preview': 'large' },
   },
   alternates: { canonical: "/" },
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/icon-192.svg",
+    apple: "/icon-192.svg",
+  },
+  themeColor: "#0B192C",
   verification: {
     google: process.env.GOOGLE_SITE_VERIFICATION || "",
   },
@@ -57,6 +63,11 @@ export default function RootLayout({
                 if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
                 if (t === 'dark') document.documentElement.classList.add('dark');
               } catch(e) {}
+              if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').catch(function() {});
+                });
+              }
             `,
           }}
         />
