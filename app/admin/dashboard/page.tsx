@@ -8,7 +8,7 @@ import {
   LayoutDashboard, Building2, Users, ShieldCheck, CreditCard,
   TrendingUp, Clock, AlertTriangle, CheckCircle2, XCircle,
   Eye, BarChart3, ArrowRight, Bell, Settings, Activity,
-  Home, MapPin, Euro
+  Home, MapPin, Euro, Flag
 } from 'lucide-react';
 
 type AdminTab = 'overview' | 'pronat' | 'perdoruesit' | 'agjencite' | 'pagesat';
@@ -95,6 +95,10 @@ export default function AdminDashboardPage() {
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900">Qendra e Kontrollit</h1>
           </div>
           <div className="flex items-center gap-2">
+            <Link href="/admin/raportet" className="text-xs font-semibold text-rose-600 bg-white border border-rose-200 px-3 py-2 rounded-xl hover:bg-rose-50 flex items-center gap-1.5">
+              <Flag className="w-3.5 h-3.5 text-rose-500" />
+              <span className="hidden sm:inline">Raportimet</span>
+            </Link>
             <Link href="/admin/settings" className="text-xs font-semibold text-slate-600 bg-white border border-slate-200 px-3 py-2 rounded-xl hover:bg-slate-50 flex items-center gap-1.5">
               <Settings className="w-3.5 h-3.5 text-slate-600" />
               <span className="hidden sm:inline">Konfigurimet</span>
