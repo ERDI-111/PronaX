@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  pronax-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pronax_production
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_APP_URL=https://pronax-ks.com
+      - PAYMENT_PROVIDER=sandbox
+      - LISTING_FEE_EUR=7.00
+      - LISTING_DURATION_DAYS=30
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/admin/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
