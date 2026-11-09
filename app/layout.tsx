@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { OrganizationJsonLd } from "@/components/JsonLd";
 import { ThemeProvider } from "@/lib/theme/ThemeProvider";
+import { CompareProvider } from "@/lib/compare/CompareContext";
 
 export const metadata: Metadata = {
   title: {
@@ -74,8 +75,10 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans transition-colors duration-200">
         <ThemeProvider>
-          <OrganizationJsonLd />
-          {children}
+          <CompareProvider>
+            <OrganizationJsonLd />
+            {children}
+          </CompareProvider>
         </ThemeProvider>
       </body>
     </html>

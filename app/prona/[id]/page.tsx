@@ -10,8 +10,9 @@ import {
   Calendar, Heart, Share2, Flag, Phone, Mail, MessageSquare,
   CheckCircle2, ArrowLeft, ArrowRight, ChevronLeft, ChevronRight,
   Eye, Clock, ExternalLink, Home, Square, Thermometer, Car,
-  Wind, Zap, TreePine, Maximize2, X, Star, Sparkles
+  Wind, Zap, TreePine, Maximize2, X, Star, Sparkles, Scale
 } from 'lucide-react';
+import { useCompare } from '@/lib/compare/CompareContext';
 
 // --- Mock data matching the search API ---
 const MOCK_PROPERTIES: Record<string, any> = {
@@ -308,6 +309,9 @@ function PropertyDetailContent() {
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReason, setReportReason] = useState('');
   const [reportSent, setReportSent] = useState(false);
+
+  const { addToCompare, removeFromCompare, isInCompare } = useCompare();
+  const compared = property ? isInCompare(property.id) : false;
 
   useEffect(() => {
     // Try to fetch from API, fallback to mock
@@ -617,6 +621,44 @@ function PropertyDetailContent() {
                   >
                     <Heart className={`w-4 h-4 ${isFavorited ? 'fill-rose-500 text-rose-500' : ''}`} />
                     {isFavorited ? 'Ruajtur' : 'Ruaj'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!property) return;
+                      if (compared) {
+                        removeFromCompare(property.id);
+                      } else {
+                        addToCompare({
+                          id: property.id,
+                          title: property.title,
+                          price: property.price,
+                          currency: property.currency,
+                          listing_type: property.listing_type,
+                          property_type: property.property_type,
+                          municipality_name: property.municipality_name,
+                          settlement_name: property.settlement_name,
+                          area_m2: property.area_m2,
+                          bedrooms: property.bedrooms,
+                          bathrooms: property.bathrooms,
+                          floor: property.floor,
+                          year_built: property.year_built,
+                          furnished: property.furnished,
+                          heating_type: property.heating_type,
+                          has_balcony: property.has_balcony,
+                          has_parking: property.has_parking,
+                          has_elevator: property.has_elevator,
+                          cover_image: property.cover_image,
+                        });
+                      }
+                    }}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold border transition-all ${
+                      compared
+                        ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-300 dark:border-emerald-700'
+                        : 'bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600'
+                    }`}
+                  >
+                    <Scale className="w-4 h-4" />
+                    {compared ? 'Në Krahasim' : 'Krahaso'}
                   </button>
                   <button
                     onClick={handleShare}

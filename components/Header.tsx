@@ -19,15 +19,18 @@ import {
   ShoppingBag,
   Key,
   Sun,
-  Moon
+  Moon,
+  Scale
 } from 'lucide-react';
 import NotificationBell from './NotificationBell';
 import { useTheme } from '@/lib/theme/ThemeProvider';
+import { useCompare } from '@/lib/compare/CompareContext';
 
 function HeaderContent() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const { isDark, toggleTheme } = useTheme();
+  const { items: compareItems } = useCompare();
 
   const isActive = (path: string) =>
     pathname === path || pathname.startsWith(path + '/');
@@ -37,6 +40,7 @@ function HeaderContent() {
     { href: '/prona?tipi=shitje', label: 'Blej Pronë', icon: ShoppingBag, matchPath: '/prona' },
     { href: '/prona?tipi=qira', label: 'Me Qira', icon: Key },
     { href: '/harta', label: 'Harta', icon: MapIcon },
+    { href: '/krahaso', label: 'Krahaso', icon: Scale },
     { href: '/agjencite', label: 'Agjencitë', icon: Users },
     { href: '/dashboard/favoritet', label: 'Favoritet', icon: Heart },
   ];
@@ -89,6 +93,21 @@ function HeaderContent() {
 
           {/* Right Section */}
           <div className="flex items-center gap-2 shrink-0">
+            {/* Compare Link */}
+            <Link
+              href="/krahaso"
+              className="relative p-2 rounded-xl hover:bg-slate-800 text-slate-300 hover:text-white transition-all flex items-center justify-center"
+              title="Krahaso Pronat"
+              aria-label="Krahaso Pronat"
+            >
+              <Scale className="w-4 h-4" />
+              {compareItems.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 text-[#0B192C] text-[10px] font-black rounded-full flex items-center justify-center shadow-sm">
+                  {compareItems.length}
+                </span>
+              )}
+            </Link>
+
             {/* Dark mode toggle */}
             <button
               onClick={toggleTheme}
