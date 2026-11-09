@@ -1,0 +1,53 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#0B192C"/>
+  <circle cx="1000" cy="150" r="300" fill="#10B981" fill-opacity="0.15" filter="blur(80px)"/>
+  <circle cx="200" cy="500" r="250" fill="#0284C7" fill-opacity="0.15" filter="blur(80px)"/>
+  
+  <!-- Logo Icon -->
+  <rect x="120" y="160" width="100" height="100" rx="24" fill="url(#paint0_linear)"/>
+  <text x="170" y="232" fill="white" font-family="system-ui, -apple-system, sans-serif" font-size="64" font-weight="900" text-anchor="middle">P</text>
+  
+  <!-- Brand Name -->
+  <text x="245" y="235" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="900" fill="white" letter-spacing="-1">Prona<tspan fill="#10B981">X</tspan></text>
+  
+  <!-- Kosovo Badge -->
+  <rect x="520" y="185" width="120" height="42" rx="10" fill="#10B981" fill-opacity="0.2" stroke="#10B981" stroke-opacity="0.4"/>
+  <text x="580" y="212" fill="#34D399" font-family="system-ui, -apple-system, sans-serif" font-size="20" font-weight="700" text-anchor="middle" letter-spacing="1">KOSOVË</text>
+
+  <!-- Tagline & Heading -->
+  <text x="120" y="340" fill="#F8FAFC" font-family="system-ui, -apple-system, sans-serif" font-size="48" font-weight="800" letter-spacing="-0.5">
+    Prona që kërkon. Shtëpia që meriton.
+  </text>
+  
+  <text x="120" y="405" fill="#94A3B8" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="500">
+    Tregu zyrtar i patundshmërive në 38 komunat e Republikës së Kosovës.
+  </text>
+  <text x="120" y="445" fill="#94A3B8" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="500">
+    Banesa, shtëpi, troje dhe lokale me tarifë fikse 7.00 € për 30 ditë.
+  </text>
+
+  <!-- Badges / Highlights bottom -->
+  <g transform="translate(120, 510)">
+    <rect width="220" height="50" rx="12" fill="#1E293B" stroke="#334155"/>
+    <text x="110" y="32" fill="#E2E8F0" font-family="system-ui, sans-serif" font-size="18" font-weight="700" text-anchor="middle">✓ 38 Komuna</text>
+  </g>
+  <g transform="translate(360, 510)">
+    <rect width="240" height="50" rx="12" fill="#1E293B" stroke="#334155"/>
+    <text x="120" y="32" fill="#E2E8F0" font-family="system-ui, sans-serif" font-size="18" font-weight="700" text-anchor="middle">✓ Tarifë 7 € / 30 Ditë</text>
+  </g>
+  <g transform="translate(620, 510)">
+    <rect width="220" height="50" rx="12" fill="#1E293B" stroke="#334155"/>
+    <text x="110" y="32" fill="#E2E8F0" font-family="system-ui, sans-serif" font-size="18" font-weight="700" text-anchor="middle">✓ Pa Abonime</text>
+  </g>
+  <g transform="translate(860, 510)">
+    <rect width="220" height="50" rx="12" fill="#1E293B" stroke="#334155"/>
+    <text x="110" y="32" fill="#34D399" font-family="system-ui, sans-serif" font-size="18" font-weight="700" text-anchor="middle">pronax-ks.com</text>
+  </g>
+
+  <defs>
+    <linearGradient id="paint0_linear" x1="120" y1="160" x2="220" y2="260" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#10B981"/>
+      <stop offset="1" stop-color="#0F766E"/>
+    </linearGradient>
+  </defs>
+</svg>
