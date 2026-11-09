@@ -20,7 +20,8 @@ import {
   Key,
   Sun,
   Moon,
-  Scale
+  Scale,
+  Calculator
 } from 'lucide-react';
 import NotificationBell from './NotificationBell';
 import { useTheme } from '@/lib/theme/ThemeProvider';
@@ -41,6 +42,7 @@ function HeaderContent() {
     { href: '/prona?tipi=qira', label: 'Me Qira', icon: Key },
     { href: '/harta', label: 'Harta', icon: MapIcon },
     { href: '/krahaso', label: 'Krahaso', icon: Scale },
+    { href: '/kalkulatori', label: 'Kalkulatori', icon: Calculator },
     { href: '/agjencite', label: 'Agjencitë', icon: Users },
     { href: '/dashboard/favoritet', label: 'Favoritet', icon: Heart },
   ];
