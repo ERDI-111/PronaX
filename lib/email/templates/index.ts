@@ -40,7 +40,7 @@ function wrapEmail(contentHtml: string, previewText: string = ''): string {
     </div>
     <div class="footer">
       <p style="margin: 0 0 6px 0;"><strong>PronaX</strong> – Prona që kërkon. Shtëpia që meriton.</p>
-      <p style="margin: 0 0 6px 0;">pronax-ks.com • Email administrativ: <a href="mailto:pronaxestate@gmail.com">pronaxestate@gmail.com</a></p>
+      <p style="margin: 0 0 6px 0;">pronax-ks.com • Email administrativ: <a href="mailto:pronaxestate@outlook.com">pronaxestate@outlook.com</a></p>
       <p style="margin: 0; color: #94a3b8;">Republika e Kosovës. Kjo është një porosi e automatizuar nga sistemi.</p>
     </div>
   </div>
@@ -61,7 +61,7 @@ export class EmailTemplateRenderer {
           <p>Mirëseerdhët në platformën kryesore të pasurive të paluajtshme në të gjithë Republikën e Kosovës.</p>
           <p>Tani mund të hulumtoni prona në të 38 komunat, të ruani kërkimet tuaja të preferuara ose të publikoni pronën tuaj me tarifën fikse prej <strong>7.00 € për 30 ditë</strong>.</p>
           <a href="${baseUrl}/dashboard/pronat" class="cta-btn">Shko te Paneli Juaj</a>
-          <p style="color: #64748b; font-size: 12px; margin-top: 24px;">Nëse keni nevojë për ndihmë, na kontaktoni në çdo kohë në pronaxestate@gmail.com.</p>
+          <p style="color: #64748b; font-size: 12px; margin-top: 24px;">Nëse keni nevojë për ndihmë, na kontaktoni në çdo kohë në pronaxestate@outlook.com.</p>
         `, 'Mirëseerdhët në PronaX - Tregu i Patundshmërive në Kosovë');
         return { subject, html };
       }

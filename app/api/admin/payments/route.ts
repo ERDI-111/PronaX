@@ -4,7 +4,7 @@ import { PaymentService } from '@/lib/payments/service';
 
 export async function GET(req: NextRequest) {
   try {
-    // In production, verify user role is admin with pronaxestate@gmail.com
+    // In production, verify user role is admin with pronaxestate@outlook.com
     const report = await PaymentService.getFinancialReport();
     const allPayments = await PaymentStore.listAllPayments();
 

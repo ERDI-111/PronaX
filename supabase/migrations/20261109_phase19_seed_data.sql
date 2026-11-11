@@ -8,7 +8,7 @@
 INSERT INTO public.profiles (id, email, full_name, phone, role, is_verified)
 VALUES (
     'a0000000-0000-0000-0000-000000000001',
-    'pronaxestate@gmail.com',
+    'pronaxestate@outlook.com',
     'Administrator PronaX',
     '+383 44 100 200',
     'admin',

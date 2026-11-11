@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { templateType = 'welcome', to = 'pronaxestate@gmail.com' } = body;
+    const { templateType = 'welcome', to = 'pronaxestate@outlook.com' } = body;
 
     let res;
     if (templateType === 'payment_success') {

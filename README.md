@@ -110,10 +110,10 @@ Supabase → Auth → Settings:
 
 ### Hapi 5: Krijo Administratorin
 ```sql
--- Pas regjistrimit të pronaxestate@gmail.com:
+-- Pas regjistrimit të pronaxestate@outlook.com:
 UPDATE public.profiles
 SET role = 'admin'
-WHERE email = 'pronaxestate@gmail.com';
+WHERE email = 'pronaxestate@outlook.com';
 ```
 
 ---
@@ -336,7 +336,7 @@ CNAME resend  (nga Resend dashboard)
 
 ## 📞 Kontakti i Administratorit
 
-- Email: pronaxestate@gmail.com
+- Email: pronaxestate@outlook.com
 - Domain: pronax-ks.com
 - Vend: Republika e Kosovës
 

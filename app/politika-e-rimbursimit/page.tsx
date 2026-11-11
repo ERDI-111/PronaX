@@ -41,7 +41,7 @@ export default function RefundPolicyPage() {
           <section className="space-y-2">
             <h2 className="text-base font-bold text-slate-900">3. Si të Kërkoni Rimbursim</h2>
             <p>
-              Për të kërkuar rimbursim, dërgoni email te <a href="mailto:pronaxestate@gmail.com" className="font-bold text-emerald-600 underline">pronaxestate@gmail.com</a> duke bashkëngjitur:
+              Për të kërkuar rimbursim, dërgoni email te <a href="mailto:pronaxestate@outlook.com" className="font-bold text-emerald-600 underline">pronaxestate@outlook.com</a> duke bashkëngjitur:
             </p>
             <ul className="list-disc pl-5 space-y-1 text-xs">
               <li>Referencën e transaksionit (ID e pagesës nga dëshmia digjitale).</li>

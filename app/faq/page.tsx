@@ -36,7 +36,7 @@ const faqs = [
   },
   {
     q: 'Si mund të raportoj një shpallje mashtruese apo me çmim jo real?',
-    a: 'Çdo pronë ka butonin "Raporto pronën". Gjithashtu mund të na shkruani drejtpërdrejt në pronaxestate@gmail.com dhe ekipi ynë i moderimit do ta shqyrtojë rastin brenda pak orësh.',
+    a: 'Çdo pronë ka butonin "Raporto pronën". Gjithashtu mund të na shkruani drejtpërdrejt në pronaxestate@outlook.com dhe ekipi ynë i moderimit do ta shqyrtojë rastin brenda pak orësh.',
   },
 ];
 

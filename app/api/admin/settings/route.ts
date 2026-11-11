@@ -6,8 +6,8 @@ let runtimeSettings: Record<string, string> = {
   listing_duration_days: '30',
   moderation_mode: 'manual', // 'manual' | 'auto'
   payment_provider: 'sandbox', // 'sandbox' | 'paysera' | 'kosovo_pos'
-  contact_email: 'pronaxestate@gmail.com',
-  admin_notification_email: 'pronaxestate@gmail.com',
+  contact_email: 'pronaxestate@outlook.com',
+  admin_notification_email: 'pronaxestate@outlook.com',
   max_images_per_listing: '30',
   max_image_size_mb: '10',
   maintenance_mode: 'false',

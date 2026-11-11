@@ -562,7 +562,7 @@ BEGIN
         NEW.email,
         COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
         CASE
-            WHEN NEW.email = 'pronaxestate@gmail.com' THEN 'admin'::user_role
+            WHEN LOWER(NEW.email) = 'pronaxestate@outlook.com' THEN 'admin'::user_role
             ELSE 'user'::user_role
         END
     );
@@ -760,7 +760,7 @@ INSERT INTO public.site_settings (key, value, description) VALUES
     ('max_image_size_mb', '10', 'Madhësia maksimale e fotos në MB'),
     ('site_name', 'PronaX', 'Emri i platformës'),
     ('site_tagline', 'Prona që kërkon. Shtëpia që meriton.', 'Tagline i platformës'),
-    ('contact_email', 'pronaxestate@gmail.com', 'Email-i i kontaktit'),
-    ('admin_email', 'pronaxestate@gmail.com', 'Email-i i administratorit'),
+    ('contact_email', 'pronaxestate@outlook.com', 'Email-i i kontaktit'),
+    ('admin_email', 'pronaxestate@outlook.com', 'Email-i i administratorit'),
     ('site_domain', 'pronax-ks.com', 'Domain-i i faqes')
 ON CONFLICT (key) DO NOTHING;

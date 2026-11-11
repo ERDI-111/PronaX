@@ -61,7 +61,7 @@ export default function Footer() {
               <li><Link href="/kontakti" className="hover:text-emerald-400 transition-colors">Kontakti & Ndihma</Link></li>
               <div className="flex items-center gap-2 pt-1">
                 <Mail className="w-3.5 h-3.5 text-emerald-400" />
-                <a href="mailto:pronaxestate@gmail.com" className="hover:text-emerald-400">pronaxestate@gmail.com</a>
+                <a href="mailto:pronaxestate@outlook.com" className="hover:text-emerald-400">pronaxestate@outlook.com</a>
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="w-3.5 h-3.5 text-emerald-400" />

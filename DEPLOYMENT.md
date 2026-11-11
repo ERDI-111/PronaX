@@ -62,7 +62,7 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=celes_i_google_maps
 # Emailet (Resend - Faza 9)
 RESEND_API_KEY=re_celes_juaj_nga_resend
 EMAIL_FROM=PronaX Kosovë <njoftime@pronax-ks.com>
-ADMIN_NOTIFICATION_EMAIL=pronaxestate@gmail.com
+ADMIN_NOTIFICATION_EMAIL=pronaxestate@outlook.com
 ```
 
 ### Hapi 3: Lidhja e Domenit pronax-ks.com

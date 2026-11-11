@@ -79,7 +79,7 @@ function LoginForm() {
 
         {/* Admin hint */}
         <div className="mb-5 p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 text-xs">
-          <strong>Administratori:</strong> <code>pronaxestate@gmail.com</code> → <Link href="/admin/dashboard" className="underline font-bold">Paneli Admin</Link>
+          <strong>Administratori:</strong> <code>pronaxestate@outlook.com</code> → <Link href="/admin/dashboard" className="underline font-bold">Paneli Admin</Link>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">

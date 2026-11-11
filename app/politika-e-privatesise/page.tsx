@@ -46,7 +46,7 @@ export default function PrivacyPolicyPage() {
               Çdo përdorues ka të drejtë të kërkojë në çdo kohë fshirjen e llogarisë së tij dhe të gjitha të dhënave personale të lidhura.
             </p>
             <p className="text-xs bg-slate-50 p-4 rounded-xl border border-slate-200">
-              Për të kërkuar fshirjen e llogarisë apo të dhënave tuaja, dërgoni një email nga adresa e regjistruar te <a href="mailto:pronaxestate@gmail.com" className="font-bold text-emerald-600 underline">pronaxestate@gmail.com</a> me subjektin <em>"Kërkesë për Fshirje të Llogarisë"</em>. Kërkesa do të procesohet brenda 48 orëve.
+              Për të kërkuar fshirjen e llogarisë apo të dhënave tuaja, dërgoni një email nga adresa e regjistruar te <a href="mailto:pronaxestate@outlook.com" className="font-bold text-emerald-600 underline">pronaxestate@outlook.com</a> me subjektin <em>"Kërkesë për Fshirje të Llogarisë"</em>. Kërkesa do të procesohet brenda 48 orëve.
             </p>
           </section>
 

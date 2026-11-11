@@ -6,7 +6,7 @@ import { Mail, MapPin, Phone, MessageSquare, Clock, ShieldCheck } from 'lucide-r
 
 export const metadata: Metadata = {
   title: 'Kontakti | PronaX Kosovë',
-  description: 'Na kontaktoni për pyetje, asistencë teknike ose bashkëpunim në pronaxestate@gmail.com.',
+  description: 'Na kontaktoni për pyetje, asistencë teknike ose bashkëpunim në pronaxestate@outlook.com.',
 };
 
 export default function ContactPage() {
@@ -39,8 +39,8 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <span className="font-bold text-slate-900 block">Email Administrativ:</span>
-                  <a href="mailto:pronaxestate@gmail.com" className="text-emerald-600 font-semibold hover:underline">
-                    pronaxestate@gmail.com
+                  <a href="mailto:pronaxestate@outlook.com" className="text-emerald-600 font-semibold hover:underline">
+                    pronaxestate@outlook.com
                   </a>
                   <span className="text-[11px] text-slate-400 block mt-0.5">Përgjigje brenda 24 orëve</span>
                 </div>
@@ -74,7 +74,7 @@ export default function ContactPage() {
                 Raportimi i Njoftimeve të Dyshimta
               </span>
               <p className="text-emerald-800 leading-relaxed text-[11px]">
-                Nëse vëreni një shpallje të rreme, mashtrim apo të dhëna kontakti të pasakta, ju lutem shkruani menjëherë në <a href="mailto:pronaxestate@gmail.com" className="font-bold underline">pronaxestate@gmail.com</a> me ID e pronës.
+                Nëse vëreni një shpallje të rreme, mashtrim apo të dhëna kontakti të pasakta, ju lutem shkruani menjëherë në <a href="mailto:pronaxestate@outlook.com" className="font-bold underline">pronaxestate@outlook.com</a> me ID e pronës.
               </p>
             </div>
           </div>

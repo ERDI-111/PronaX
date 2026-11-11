@@ -9,7 +9,7 @@ export function OrganizationJsonLd() {
     url: 'https://pronax-ks.com',
     logo: 'https://pronax-ks.com/logo.png',
     description: 'Prona që kërkon. Shtëpia që meriton. Tregu kryesor i pasurive të paluajtshme në Republikën e Kosovës.',
-    email: 'pronaxestate@gmail.com',
+    email: 'pronaxestate@outlook.com',
     telephone: '+38344000000',
     address: {
       '@type': 'PostalAddress',

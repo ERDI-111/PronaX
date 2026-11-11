@@ -36,7 +36,7 @@ export default function EmailPreviewPage() {
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [sendFeedback, setSendFeedback] = useState<string | null>(null);
-  const [testEmail, setTestEmail] = useState('pronaxestate@gmail.com');
+  const [testEmail, setTestEmail] = useState('pronaxestate@outlook.com');
 
   const fetchPreview = async (tmpl: EmailTemplateType) => {
     setLoading(true);
@@ -134,7 +134,7 @@ export default function EmailPreviewPage() {
                 type="email"
                 value={testEmail}
                 onChange={(e) => setTestEmail(e.target.value)}
-                placeholder="pronaxestate@gmail.com"
+                placeholder="pronaxestate@outlook.com"
                 className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
               <button

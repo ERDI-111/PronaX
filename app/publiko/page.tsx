@@ -93,7 +93,7 @@ export default function PropertyPublishingWizard() {
     // Step 6: Seller Info
     seller_name: 'Erdis Berisha',
     seller_phone: '+383 44 200 300',
-    seller_email: 'pronaxestate@gmail.com',
+    seller_email: 'pronaxestate@outlook.com',
     seller_type: 'private', // 'private' | 'agency'
     agency_name: '',
     whatsapp_available: true,

@@ -203,10 +203,10 @@ export default function HelpCenterPage() {
               <span>Dërgo Mesazh</span>
             </Link>
             <a
-              href="mailto:pronaxestate@gmail.com"
+              href="mailto:pronaxestate@outlook.com"
               className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold px-5 py-3 rounded-xl transition-all text-xs border border-white/20"
             >
-              <span>pronaxestate@gmail.com</span>
+              <span>pronaxestate@outlook.com</span>
             </a>
           </div>
         </div>

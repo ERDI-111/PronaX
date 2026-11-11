@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
 
     const cleanPropertyId = SecuritySanitizer.sanitizeString(propertyId);
     const userId = SecuritySanitizer.sanitizeString(body.userId || 'user-erdis-001');
-    const userEmail = SecuritySanitizer.sanitizeString(body.userEmail || 'pronaxestate@gmail.com');
+    const userEmail = SecuritySanitizer.sanitizeString(body.userEmail || 'pronaxestate@outlook.com');
     const userName = SecuritySanitizer.sanitizeString(body.userName || 'Përdorues PronaX');
 
     const originUrl = req.nextUrl.origin;

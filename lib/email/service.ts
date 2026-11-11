@@ -8,7 +8,7 @@ const loggedEmails: LoggedEmail[] = [];
 export class EmailService {
   private static readonly RESEND_API_URL = 'https://api.resend.com/emails';
   private static readonly SENDER = process.env.EMAIL_FROM || 'PronaX Kosovë <njoftime@pronax-ks.com>';
-  private static readonly ADMIN_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL || 'pronaxestate@gmail.com';
+  private static readonly ADMIN_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL || 'pronaxestate@outlook.com';
 
   /**
    * Sends an email via Resend or logs it in simulation mode.

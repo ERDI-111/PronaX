@@ -59,7 +59,7 @@ export default function AdminPaymentsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           paymentId,
-          reason: 'Rimbursim i aprovuar nga administratori (pronaxestate@gmail.com)',
+          reason: 'Rimbursim i aprovuar nga administratori (pronaxestate@outlook.com)',
         }),
       });
 
@@ -98,7 +98,7 @@ export default function AdminPaymentsPage() {
           <div>
             <div className="flex items-center gap-2 text-xs font-bold text-amber-600 uppercase tracking-wider mb-1">
               <ShieldAlert className="w-4 h-4" />
-              <span>Paneli Administrativ • pronaxestate@gmail.com</span>
+              <span>Paneli Administrativ • pronaxestate@outlook.com</span>
             </div>
             <h1 className="text-3xl font-black text-[#0B192C] tracking-tight">
               Menaxhimi Financiar & Transaksionet
