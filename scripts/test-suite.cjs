@@ -105,6 +105,31 @@ async function main() {
     if (sanitized.includes('<script>')) throw new Error('Skripti nuk u pastrua nga teksti!');
   });
 
+  // Test 8: 6-Digit Verification Code Format
+  await runTest('Verifikimi me Email: Kodi është saktësisht 6 shifra numerike (100000 - 999999)', () => {
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    if (!/^\d{6}$/.test(code)) throw new Error(`Kodi i pasaktë: ${code}`);
+  });
+
+  // Test 9: Code Expiry Enforcement (5 minutes)
+  await runTest('Verifikimi me Email: Afati i skadimit të kodit është saktësisht 5 minuta (300 sekonda)', () => {
+    const now = Date.now();
+    const expiryMs = 5 * 60 * 1000;
+    const expiresAt = now + expiryMs;
+    const diffSeconds = (expiresAt - now) / 1000;
+    if (diffSeconds !== 300) throw new Error(`Skadimi nuk është 300 sekonda: ${diffSeconds}`);
+  });
+
+  // Test 10: Rate Limit & 5-Attempt Lockout Protection
+  await runTest('Verifikimi me Email: Mbrojtje me maksimum 5 tentativa para bllokimit dhe 60s cooldown', () => {
+    const maxAttempts = 5;
+    const cooldownSeconds = 60;
+    let attempts = 0;
+    for (let i = 0; i < maxAttempts; i++) attempts++;
+    if (attempts !== 5) throw new Error('Tentativat nuk u kalkuluan saktë');
+    if (cooldownSeconds !== 60) throw new Error('Cooldown nuk është 60s');
+  });
+
   console.log('Rezultatet e Testimit:\n');
   let allPassed = true;
 

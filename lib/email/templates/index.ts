@@ -67,7 +67,41 @@ export class EmailTemplateRenderer {
       }
 
       case 'email_verification': {
-        const subject = 'Verifikoni adresën tuaj të email-it – PronaX';
+        const code = data.code;
+        const subject = 'Kodi yt i verifikimit – PronaX';
+
+        if (code) {
+          const html = wrapEmail(`
+            <div style="text-align: center; margin-bottom: 24px;">
+              <div style="display: inline-block; width: 48px; height: 48px; line-height: 48px; border-radius: 14px; background-color: #ecfdf5; color: #059669; font-size: 24px; font-weight: bold; margin-bottom: 12px;">
+                ✓
+              </div>
+              <h1 style="color: #0B192C; font-size: 22px; font-weight: 800; margin: 0 0 8px 0;">Kodi yt i verifikimit</h1>
+              <p style="color: #64748b; font-size: 14px; margin: 0;">Përdor kodin e mëposhtëm me 6 shifra për t'u kyçur në llogarinë tënde PronaX:</p>
+            </div>
+
+            <div style="text-align: center; margin: 28px 0;">
+              <div style="display: inline-block; background: #0B192C; color: #ffffff; font-family: monospace; font-size: 36px; font-weight: 900; letter-spacing: 12px; padding: 18px 32px 18px 44px; border-radius: 16px; box-shadow: 0 4px 12px rgba(11, 25, 44, 0.15);">
+                ${code}
+              </div>
+            </div>
+
+            <div class="info-card" style="background-color: #f8fafc; border-left: 4px solid #059669; padding: 14px 16px;">
+              <div style="color: #334155; font-size: 13px; margin-bottom: 6px;">
+                ⏱ <strong>Ky kod skadon pas 5 minutash.</strong>
+              </div>
+              <div style="color: #64748b; font-size: 12px;">
+                🔒 Mos e ndaj këtë kod me asnjë person. Ekipi i PronaX nuk do t'ju kërkojë kurrë kodin tuaj të sigurisë.
+              </div>
+            </div>
+
+            <p style="color: #94a3b8; font-size: 11px; text-align: center; margin-top: 24px;">
+              Nëse nuk e keni kërkuar këtë kod, rekomandojmë të ndryshoni menjëherë fjalëkalimin e llogarisë tuaj.
+            </p>
+          `, `Kodi yt i verifikimit: ${code}`);
+          return { subject, html };
+        }
+
         const verifyUrl = data.verificationUrl || `${baseUrl}/auth/verify?token=demo`;
         const html = wrapEmail(`
           <h1>Verifikimi i Llogarisë Tuaj</h1>
