@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PaymentService } from '@/lib/payments/service';
+import { getPlanById, PricingPlanId } from '@/lib/payments/plans';
 import { RateLimiter } from '@/lib/security/rate-limiter';
 import { SecuritySanitizer } from '@/lib/security/sanitize';
 
@@ -19,7 +20,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { propertyId, purpose = 'new_listing', preferredProvider } = body;
+    const { propertyId, planId = 'monthly', purpose = 'new_listing', preferredProvider } = body;
 
     if (!propertyId) {
       return NextResponse.json(
@@ -29,6 +30,8 @@ export async function POST(req: NextRequest) {
     }
 
     const cleanPropertyId = SecuritySanitizer.sanitizeString(propertyId);
+    const cleanPlanId = SecuritySanitizer.sanitizeString(planId) as PricingPlanId;
+    const plan = getPlanById(cleanPlanId);
     const userId = SecuritySanitizer.sanitizeString(body.userId || 'user-erdis-001');
     const userEmail = SecuritySanitizer.sanitizeString(body.userEmail || 'pronaxestate@outlook.com');
     const userName = SecuritySanitizer.sanitizeString(body.userName || 'Përdorues PronaX');
@@ -40,6 +43,7 @@ export async function POST(req: NextRequest) {
       userId,
       userEmail,
       userName,
+      planId: plan.id,
       purpose,
       preferredProvider,
       originUrl,
@@ -49,9 +53,13 @@ export async function POST(req: NextRequest) {
       success: true,
       paymentId: session.paymentId,
       checkoutUrl: session.checkoutUrl,
-      amount: '7.00',
+      planId: plan.id,
+      planName: plan.name,
+      amount: (plan.priceCents / 100).toFixed(2),
+      amountCents: plan.priceCents,
       currency: 'EUR',
-      durationDays: 30,
+      durationDays: plan.durationDays,
+      isFree: plan.priceCents === 0,
     });
   } catch (error: any) {
     console.error('Gabim gjatë krijimit të pagesës:', error);

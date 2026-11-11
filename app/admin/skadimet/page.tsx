@@ -91,10 +91,10 @@ export default function AdminExpirationsPage() {
               <span>Paneli Administrativ • pronaxestate@outlook.com</span>
             </div>
             <h1 className="text-3xl font-black text-[#0B192C] tracking-tight">
-              Mbikëqyrja e Skadimeve & Automatizimi (30 Ditë)
+              Mbikëqyrja e Skadimeve & Automatizimi i Planeve
             </h1>
             <p className="text-sm text-slate-600 mt-1">
-              Menaxho ciklin 30-ditor, ekzekuto kontrollin automatik (cron) dhe inspekto njoftimet e dërguara.
+              Menaxho skadimet sipas planit (3 / 7 / 30 ditë), ekzekuto kontrollin automatik (cron) dhe inspekto njoftimet e dërguara.
             </p>
           </div>
 

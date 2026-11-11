@@ -2,8 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // In-memory runtime settings store (fallback when DB credentials not configured)
 let runtimeSettings: Record<string, string> = {
-  listing_fee_eur: '7.00',
-  listing_duration_days: '30',
+  plan_free_price_eur: '0.00',
+  plan_free_duration_days: '3',
+  plan_weekly_price_eur: '2.99',
+  plan_weekly_duration_days: '7',
+  plan_monthly_price_eur: '9.99',
+  plan_monthly_duration_days: '30',
   moderation_mode: 'manual', // 'manual' | 'auto'
   payment_provider: 'sandbox', // 'sandbox' | 'paysera' | 'kosovo_pos'
   contact_email: 'pronaxestate@outlook.com',
@@ -11,7 +15,6 @@ let runtimeSettings: Record<string, string> = {
   max_images_per_listing: '30',
   max_image_size_mb: '10',
   maintenance_mode: 'false',
-  featured_listing_addon_eur: '15.00',
 };
 
 export async function GET() {

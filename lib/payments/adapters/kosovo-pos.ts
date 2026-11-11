@@ -119,8 +119,9 @@ export class KosovoBankPosAdapter implements PaymentAdapter {
     const is3dSuccessful = ['1', '2', '3', '4'].includes(String(mdStatus));
     const isApproved = String(response).toUpperCase() === 'APPROVED';
 
-    // Strict amount validation: Must be exactly 7.00 EUR (700 cents)
-    if (amountCents !== 700) {
+    // Strict amount validation: Must match PronaX plans (2.99 € = 299 cents, 9.99 € = 999 cents)
+    const validPlanAmounts = [299, 999];
+    if (!validPlanAmounts.includes(amountCents)) {
       return {
         isValid: false,
         paymentId: oid,
@@ -128,7 +129,7 @@ export class KosovoBankPosAdapter implements PaymentAdapter {
         amountCents,
         currency: 'EUR',
         rawPayload: body,
-        errorMessage: `Shuma nuk përputhet me tarifën e PronaX (Pranuar: ${amountCents} cent, Kërkohet: 700 cent).`,
+        errorMessage: `Shuma nuk përputhet me planet e PronaX (Pranuar: ${amountCents} cent, Planet: 299 cent ose 999 cent).`,
       };
     }
 

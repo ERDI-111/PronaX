@@ -68,19 +68,20 @@ export class PronaXTestSuite {
   private static async testListingFeeEnforcement(): Promise<TestResult> {
     const t0 = Date.now();
     try {
-      if (PaymentService.LISTING_FEE_CENTS !== 700) {
-        throw new Error(`Tarifa nuk është 700 cent (është ${PaymentService.LISTING_FEE_CENTS})`);
+      const { PRONAX_PRICING_PLANS } = await import('@/lib/payments/plans');
+      if (PRONAX_PRICING_PLANS.free.priceCents !== 0 || PRONAX_PRICING_PLANS.weekly.priceCents !== 299 || PRONAX_PRICING_PLANS.monthly.priceCents !== 999) {
+        throw new Error('Planet e çmimeve nuk përputhen me specifikimin.');
       }
       return {
-        name: 'Tarifa Fikse 7.00 € (700 cent)',
+        name: 'Planet e Publikimit (Falas 0€, Javore 2.99€, Mujore 9.99€)',
         category: 'payment',
         status: 'passed',
-        message: 'Tarifa fikse e publikimit dhe rinovimit është saktësisht 7.00 € e zbatuar në nivel serveri.',
+        message: 'Planet e reja të PronaX janë implementuar saktë në nivel serveri.',
         durationMs: Date.now() - t0,
       };
     } catch (e: any) {
       return {
-        name: 'Tarifa Fikse 7.00 €',
+        name: 'Planet e Publikimit',
         category: 'payment',
         status: 'failed',
         message: e.message,
@@ -101,7 +102,7 @@ export class PronaXTestSuite {
       const dummyHeaders = new Headers();
       const res = await PaymentService.handleWebhook('sandbox', dummyHeaders, {
         paymentId: 'tx-sample-01',
-        amountCents: 700,
+        amountCents: 999,
         currency: 'EUR',
         status: 'successful',
       });
@@ -247,7 +248,7 @@ export class PronaXTestSuite {
 
       const res = await PaymentService.handleWebhook('sandbox', dummyHeaders, {
         paymentId: 'pay_unverified_test',
-        amountCents: 700,
+        amountCents: 999,
         currency: 'EUR',
       });
 

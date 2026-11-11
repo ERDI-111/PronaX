@@ -8,19 +8,19 @@ import { ChevronDown, HelpCircle, Sparkles } from 'lucide-react';
 const faqs = [
   {
     q: 'Sa kushton publikimi i një prone në PronaX?',
-    a: 'Publikimi i çdo prone kushton fiks 7.00 € (EUR). Kjo tarifë përfshin shfaqjen e plotë në ballinë, listat e kërkimit dhe hartën interaktive për saktësisht 30 ditë kalendarike.',
+    a: 'PronaX ofron tre plane të përshtatshme: Plani Falas (0 € për 3 ditë), Plani Javor (2.99 € për 7 ditë) dhe Plani Mujor (9.99 € për 30 ditë). Të gjitha planet përfshijnë shfaqjen e plotë në ballinë, listat e kërkimit dhe hartën gjeografike interaktive.',
   },
   {
     q: 'A më tërhiqen para automatikisht nga kartela çdo muaj?',
     a: 'Jo, absolutisht jo! PronaX zbaton parimin e pagesës së njëhershme. Nuk ka abonime automatike dhe kartela juaj nuk ngarkohet kurrë pa veprimin tuaj të drejtpërdrejtë dhe manual.',
   },
   {
-    q: 'Çfarë ndodh kur kalojnë 30 ditët e publikimit?',
-    a: 'Në ditën e 30-të, prona kalon automatikisht në statusin e skaduar dhe largohet nga rezultatet publike të kërkimit. Megjithatë, të gjitha të dhënat, fotografitë dhe përshkrimi mbeten të ruajtura të sigurta në panelin tuaj.',
+    q: 'Çfarë ndodh kur skadon kohëzgjatja e planit të zgjedhur?',
+    a: 'Kur përfundon afati (pas 3 ditësh për planin falas, 7 ditësh për të javshmin, ose 30 ditësh për të muajshmin), prona kalon automatikisht në statusin e skaduar dhe largohet nga rezultatet publike të kërkimit dhe harta. Të gjitha të dhënat dhe fotografitë mbeten të ruajtura në panelin tuaj.',
   },
   {
     q: 'Si funksionon rinovimi i pronës?',
-    a: 'Rinovimi është i thjeshtë dhe tërësisht manual. Nga paneli juaj "Pronat e Mia", klikoni butonin "Rinovo pronën – 7 €". Pas kryerjes së pagesës së re prej 7.00 €, prona bëhet sërish publike për 30 ditë të tjera.',
+    a: 'Rinovimi është i thjeshtë dhe tërësisht manual. Nga paneli juaj "Pronat e Mia", zgjidhni cilindo plan të ri (Falas, Javor 2.99 € ose Mujor 9.99 €) për ta riaktivizuar pronën tuaj.',
   },
   {
     q: 'A do të pranoj njoftim para se të skadojë prona ime?',
@@ -61,7 +61,7 @@ export default function FaqPage() {
             Gjithçka që Duhet të Dini mbi PronaX
           </h1>
           <p className="text-sm text-slate-600">
-            Gjeni përgjigje të qarta mbi tarifën 7.00 €, ciklin 30-ditor, mënyrat e pagesës dhe sigurinë.
+            Gjeni përgjigje të qarta mbi 3 planet e publikimit, mënyrat e pagesës dhe sigurinë.
           </p>
         </div>
 

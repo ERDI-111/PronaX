@@ -71,8 +71,9 @@ export class SandboxPaymentAdapter implements PaymentAdapter {
       };
     }
 
-    // Strict validation: Amount must be exactly 700 cents (7.00 EUR)
-    if (amountCents !== 700 || currency !== 'EUR') {
+    // Strict validation: Amount must be a valid paid plan amount (299 cents = 2.99 € or 999 cents = 9.99 €)
+    const validPlanAmounts = [299, 999];
+    if (!validPlanAmounts.includes(amountCents) || currency !== 'EUR') {
       return {
         isValid: false,
         paymentId: paymentId || '',
@@ -80,7 +81,7 @@ export class SandboxPaymentAdapter implements PaymentAdapter {
         amountCents,
         currency,
         rawPayload: body,
-        errorMessage: `Shuma e pavlefshme: ${amountCents} cent. Kërkohet saktësisht 700 EUR cents (7.00 €).`,
+        errorMessage: `Shuma e pavlefshme: ${amountCents} cent. Planet me pagesë të PronaX janë 2.99 € (299 cent) dhe 9.99 € (999 cent).`,
       };
     }
 

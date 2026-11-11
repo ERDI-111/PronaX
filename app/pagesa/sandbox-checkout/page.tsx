@@ -10,7 +10,12 @@ function SandboxCheckoutContent() {
 
   const paymentId = searchParams.get('paymentId') || 'pay_demo_test';
   const propertyId = searchParams.get('propertyId') || 'prop-ks-101';
-  const amount = searchParams.get('amount') || '700';
+  const rawAmount = searchParams.get('amount') || '999';
+  const amountCents = parseInt(rawAmount, 10) === 299 || parseInt(rawAmount, 10) === 999 
+    ? parseInt(rawAmount, 10) 
+    : (parseFloat(rawAmount) === 2.99 ? 299 : 999);
+  const displayEur = (amountCents / 100).toFixed(2);
+  const planDuration = amountCents === 299 ? '7 ditë' : '30 ditë';
   const currency = searchParams.get('currency') || 'EUR';
   const purpose = searchParams.get('purpose') || 'new_listing';
 
@@ -26,7 +31,7 @@ function SandboxCheckoutContent() {
         paymentId,
         providerTransactionId: `SANDBOX-TX-${Date.now()}`,
         status,
-        amountCents: 700,
+        amountCents,
         currency: 'EUR',
       };
 
@@ -83,12 +88,12 @@ function SandboxCheckoutContent() {
         <div className="flex justify-between text-xs text-slate-400">
           <span>Qëllimi:</span>
           <span className="text-emerald-400 font-medium">
-            {purpose === 'renewal' ? 'Rinovim 30 ditor' : 'Publikim i ri 30 ditor'}
+            {purpose === 'renewal' ? `Rinovim (${planDuration})` : `Publikim i ri (${planDuration})`}
           </span>
         </div>
         <div className="flex justify-between items-baseline pt-2 border-t border-slate-800 text-sm">
           <span className="text-slate-300 font-semibold">Shuma e Faturuar:</span>
-          <span className="text-2xl font-black text-white">7.00 € <span className="text-xs font-normal text-slate-400">EUR</span></span>
+          <span className="text-2xl font-black text-white">{displayEur} € <span className="text-xs font-normal text-slate-400">EUR</span></span>
         </div>
       </div>
 
@@ -127,7 +132,7 @@ function SandboxCheckoutContent() {
           ) : (
             <>
               <CheckCircle className="w-4 h-4" />
-              <span>Simulo Pagesë të Suksesshme (7.00 €)</span>
+              <span>Simulo Pagesë të Suksesshme ({displayEur} €)</span>
             </>
           )}
         </button>

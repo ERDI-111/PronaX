@@ -8,7 +8,8 @@ import {
 
 export class ExpirationService {
   /**
-   * Calculates days and hours remaining until 30-day listing expiration.
+   * Calculates days and hours remaining until plan-based listing expiration.
+   * Supports all three plans: free (3 days), weekly (7 days), monthly (30 days).
    * Provides UI helper labels and severity classes in Albanian.
    */
   static calculateDaysRemaining(expiresAt: string | null | undefined): DaysRemainingInfo {

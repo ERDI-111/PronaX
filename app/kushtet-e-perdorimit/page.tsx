@@ -34,10 +34,10 @@ export default function TermsPage() {
               PronaX është një treg online (marketplace) që lehtëson lidhjen ndërmjet pronarëve, shitësve, agjencive dhe blerësve apo qiramarrësve në Republikën e Kosovës.
             </p>
             <ul className="list-disc pl-5 space-y-1 text-xs">
-              <li>Tarifa standarde e shpalljes së një prone është <strong>7.00 € (EUR)</strong>.</li>
-              <li>Çdo publikim i suksesshëm mbetet aktiv për një periudhë fikse prej <strong>30 ditësh kalendarike</strong>.</li>
-              <li>Pagesa është e njëhershme; nuk ka abonim automatik apo tërheqje të përsëritur nga kartela juaj.</li>
-              <li>Rinovimi kërkon një pagesë të re manuale prej 7.00 € për 30 ditë shtesë.</li>
+              <li>PronaX ofron tre plane publikimi: <strong>Plani Falas (0 € për 3 ditë)</strong>, <strong>Plani Javor (2.99 € për 7 ditë)</strong> dhe <strong>Plani Mujor (9.99 € për 30 ditë)</strong>.</li>
+              <li>Çdo publikim mbetet aktiv ekzaktësisht për kohëzgjatjen e planit të zgjedhur dhe skadon automatikisht.</li>
+              <li>Pagesat për planet me pagesë janë të njëhershme; nuk ka abonim automatik apo tërheqje të përsëritur nga kartela juaj.</li>
+              <li>Rinovimi bëhet manualisht nga përdoruesi duke zgjedhur një plan të ri sipas dëshirës.</li>
             </ul>
           </section>
 

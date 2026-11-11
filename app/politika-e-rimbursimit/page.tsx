@@ -30,7 +30,7 @@ export default function RefundPolicyPage() {
 
           <section className="space-y-2">
             <h2 className="text-base font-bold text-slate-900">2. Rastet kur Pranohet Rimbursimi</h2>
-            <p>Rimbursimi i plotë prej 7.00 € aprovohet menjëherë në rastet vijuese:</p>
+            <p>Rimbursimi i plotë i shumës së paguar aprovohet menjëherë në rastet vijuese:</p>
             <ul className="list-disc pl-5 space-y-1 text-xs">
               <li><strong>Pagesë e dyfishtë e paqëllimshme:</strong> Kur për shkak të ndonjë vonese rrjeti kartela është tarifuar dy herë për të njëjtën pronë.</li>
               <li><strong>Refuzim përfundimtar nga moderimi:</strong> Nëse prona refuzohet nga stafi administrativ dhe përdoruesi zgjedh të mos e ri-dorëzojë me fotografi apo të dhëna të korrigjuara.</li>

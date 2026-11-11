@@ -1,16 +1,23 @@
-# PronaX – Arkitektura e Pagesave & Cikli 30-Ditor (Faza 7)
+# PronaX – Arkitektura e Pagesave & Sistemi 3-Planësh (Faza 3)
 
-Ky dokument përmban specifikimin e plotë teknik dhe udhëzimet e konfigurimit për sistemin e pagesave dhe menaxhimin financiar të platformës **PronaX** (Republika e Kosovës).
+Ky dokument përmban specifikimin e plotë teknik dhe udhëzimet e konfigurimit për sistemin e pagesave të platformës **PronaX** (Republika e Kosovës).
 
 ---
 
 ## 1. Rregullat Kryesore të Biznesit (Business Rules)
 
-1. **Tarifa Fikse e Publikimit**: **7.00 €** (700 cent EUR). Çmimi llogaritet dhe imponohet rreptësisht në server, duke injoruar çdo modifikim nga klienti.
-2. **Kohëzgjatja e Publikimit**: Saktësisht **30 ditë kalendarike** (`expires_at = published_at + INTERVAL '30 days'`).
+| Plani   | Çmimi  | Cent EUR | Kohëzgjatja |
+|---------|--------|----------|-------------|
+| **Falas** (`free`)     | 0.00 € | 0 cent  | 3 ditë  |
+| **Javor** (`weekly`)   | 2.99 € | 299 cent | 7 ditë  |
+| **Mujor** (`monthly`)  | 9.99 € | 999 cent | 30 ditë |
+
+1. **3 Planet e Publikimit**: Çmimi dhe kohëzgjatja llogariten sipas planit të zgjedhur nga përdoruesi dhe imponohen rreptësisht në server.
+2. **Kohëzgjatja sipas Planit**: `expires_at = published_at + INTERVAL '<duration_days> days'`.
 3. **Pagesë e Njëhershme**: Asnjë abonim automatik (No recurring charge). Kartela e përdoruesit nuk tarifohet kurrë automatikisht.
-4. **Rinovimi Manual (7.00 €)**: Pas skadimit të 30 ditëve, prona hiqet nga kërkimi publik por ruhet në panelin e pronarit. Rinovimi kërkon pagesë të re manuale prej 7.00 € dhe regjistrohet si transaksion i pavarur në tabelën `listing_renewals`.
-5. **Verifikim Serverik**: Asnjë pronë nuk aktivizohet nga përgjigjet e thjeshta të frontend-it. Publikimi ndodh vetëm pas verifikimit të nënshkrimit kriptografik të webhook-ut nga ofruesi bankar.
+4. **Rinovimi Manual**: Pas skadimit, prona hiqet nga kërkimi publik por ruhet në panelin e pronarit. Rinovimi kërkon zgjedhje të re të planit dhe pagesë manuale.
+5. **Plani Falas**: Nuk kërkon asnjë pagesë. Aktivizohet direkt pas moderimit.
+6. **Verifikim Serverik**: Asnjë pronë nuk aktivizohet nga përgjigjet e thjeshta të frontend-it. Publikimi ndodh vetëm pas verifikimit të webhook-ut nga ofruesi.
 
 ---
 
@@ -28,35 +35,40 @@ Platforma mbështet ofrues të shumëfishtë përmes modelit Adapter:
 
 ## 3. Struktura e Bazës së Dhënave (Supabase / PostgreSQL)
 
-Skripta e migrimit ndodhet në:
-`supabase/migrations/20261109_phase7_payments.sql`
+Skriptat e migrimit ndodhen në:
+- `supabase/migrations/20261109_phase7_payments.sql` — skema bazë
+- `supabase/migrations/20261111_payment_plans.sql` — shtimi i 3 planeve
 
-Ajo përfshin:
+Tabela `payments` përfshin tani edhe:
+- **`plan_id`** (`free` | `weekly` | `monthly`) — plani i zgjedhur
+- **`duration_days`** (`3` | `7` | `30`) — kohëzgjatja e planit
+
+Kolona të tjera:
 - **`properties`**: Statuset (`draft`, `pending_payment`, `pending_moderation`, `published`, `expired`, `rejected`, `archived`), `published_at`, `expires_at`, `renewal_count`.
-- **`payments`**: `id`, `property_id`, `user_id`, `amount_cents` (700), `currency` (EUR), `purpose` (`new_listing` / `renewal`), `provider`, `provider_transaction_id`, `provider_fee_cents`, `status`, `idempotency_key`.
-- **`payment_events`**: Regjistri i plotë i auditimit dhe logimi i papërpunuar i të gjitha thirrjeve webhook dhe IP të dërguesit.
-- **`listing_renewals`**: Historiku i plotë i rinovimeve 30-ditore me datat e mëparshme dhe të reja të skadimit.
-- **`site_settings`**: Konfigurimi i çmimit (7.00 €), kohëzgjatjes (30 ditë), dhe kërkesës së aprovimit nga administratori.
+- **`payments`**: `id`, `property_id`, `user_id`, `amount_cents` (0/299/999), `currency` (EUR), `plan_id`, `duration_days`, `purpose` (`new_listing` / `renewal`), `provider`, `provider_transaction_id`, `provider_fee_cents`, `status`, `idempotency_key`.
+- **`payment_events`**: Regjistri i plotë i auditimit dhe logimi i papërpunuar i të gjitha thirrjeve webhook.
+- **`listing_renewals`**: Historiku i plotë i rinovimeve me datat e mëparshme dhe të reja të skadimit.
+- **`site_settings`**: Konfigurimi i 3 planeve (çmimi dhe kohëzgjatja per plan), dhe kërkesës së aprovimit nga administratori.
 - **Funksioni `check_expired_properties()`**: Ekzekutohet në mënyrë periodike (cron) për të kaluar pronat e skaduara në statusin `expired`.
 
 ---
 
 ## 4. Rrugët e Implementuara (Routes & Pages)
 
-- **Faqja e Checkout-it**: `/pagesa/[propertyId]` (Zgjedhja e ofruesit, përmbledhja €7.00, siguria 3D Secure).
-- **Simulatori i Testimit**: `/pagesa/sandbox-checkout` (Testim me 1 klikim i suksesit, dështimit dhe anulimit).
-- **Faqja e Suksesit**: `/pagesa/sukses?paymentId=...` (Verifikim serverik, faturë digjitale, data e skadimit 30 ditë).
-- **Faqja e Dështimit**: `/pagesa/deshtuar?propertyId=...` (Këshilla për përdoruesin, ruajtja e draftit, mundësi ripërpjekjeje).
-- **Paneli i Përdoruesit**: `/dashboard/pagesat` (Lista e transaksioneve të përdoruesit, faturat, buton rinovimi për pronat e skaduara).
-- **Paneli Financiar Admin**: `/admin/pagesat` (Të ardhurat bruto, tarifat e vlerësuara të ofruesit, neto, kërkimi, dhe rimbursimi i autorizuar).
+- **Faqja e Zgjedhjes së Planit**: `/pagesa/[propertyId]` — Zgjedhja e planit (Falas / Javor / Mujor), ofruesit të pagesës, 3D Secure.
+- **Simulatori i Testimit**: `/pagesa/sandbox-checkout` — Testim me 1 klikim (sukses / dështim / anulim). Shuma lexohet nga URL (`?amountCents=299|999`).
+- **Faqja e Suksesit**: `/pagesa/sukses?paymentId=...` — Verifikim serverik, faturë digjitale, data e skadimit sipas planit.
+- **Faqja e Dështimit**: `/pagesa/deshtuar?propertyId=...` — Këshilla për përdoruesin, ruajtja e draftit, mundësi ripërpjekjeje.
+- **Paneli i Përdoruesit**: `/dashboard/pagesat` — Lista e transaksioneve, faturat, buton rinovimi.
+- **Paneli Financiar Admin**: `/admin/pagesat` — Të ardhurat, tarifat, neto, kërkimi, rimbursimi.
 
 ### API Endpoints:
-- `POST /api/payments/checkout`: Krijon sesionin e ri të pagesës për 7.00 €.
-- `POST /api/payments/webhook/[provider]`: Verifikon nënshkrimin digjital, zbaton idempotencën dhe aktivizon pronën.
-- `GET /api/payments/verify`: Verifikon statusin e pagesës për klientin.
-- `GET /api/payments/history`: Kthen historikun e përdoruesit.
-- `GET /api/admin/payments`: Raporti financiar dhe transaksionet për administratorin.
-- `POST /api/admin/payments/refund`: Ekzekuton rimbursimin nga paneli i administratorit.
+- `POST /api/payments/checkout` — Krijon sesionin e ri të pagesës. Kërkon `planId` (`free`/`weekly`/`monthly`). Plani falas aktivizohet direkt.
+- `POST /api/payments/webhook/[provider]` — Verifikon nënshkrimin digjital, zbaton idempotencën, aktivizon pronën.
+- `GET /api/payments/verify` — Verifikon statusin e pagesës për klientin.
+- `GET /api/payments/history` — Kthen historikun e transaksioneve të përdoruesit.
+- `GET /api/admin/payments` — Raporti financiar dhe transaksionet për administratorin.
+- `POST /api/admin/payments/refund` — Ekzekuton rimbursimin nga paneli i administratorit.
 
 ---
 

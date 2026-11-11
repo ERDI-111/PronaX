@@ -147,8 +147,9 @@ export class PayseraModernAdapter implements PaymentAdapter {
       };
     }
 
-    // Strict validation: Amount must be exactly 700 cents (7.00 EUR)
-    if (amount !== 700 || currency !== 'EUR') {
+    // Strict validation: Amount must match PronaX paid plans (299 cents = 2.99 € or 999 cents = 9.99 €)
+    const validPlanAmounts = [299, 999];
+    if (!validPlanAmounts.includes(amount) || currency !== 'EUR') {
       return {
         isValid: false,
         paymentId: orderId,
@@ -156,7 +157,7 @@ export class PayseraModernAdapter implements PaymentAdapter {
         amountCents: amount,
         currency,
         rawPayload: Object.fromEntries(query.entries()),
-        errorMessage: `Shuma e pavlefshme: u pranuan ${amount} ${currency}, ndërsa tarifa fikse e PronaX është 700 EUR cents (7.00 €).`,
+        errorMessage: `Shuma e pavlefshme: u pranuan ${amount} ${currency}, ndërsa planet me pagesë të PronaX janë 2.99 € (299 cent) dhe 9.99 € (999 cent).`,
       };
     }
 

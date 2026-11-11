@@ -30,14 +30,17 @@ import {
   Eye, 
   Layers,
   Sparkles,
-  AlertCircle
+  AlertCircle,
+  Check
 } from 'lucide-react';
+import { PRONAX_PRICING_PLANS, PricingPlanId, getPlanById } from '@/lib/payments/plans';
 
 export default function PropertyPublishingWizard() {
   const router = useRouter();
 
   // Wizard Step (1 to 8)
   const [currentStep, setCurrentStep] = useState<number>(1);
+  const [selectedPlanId, setSelectedPlanId] = useState<PricingPlanId>('monthly');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -185,17 +188,37 @@ export default function PropertyPublishingWizard() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Submit and redirect to €7 payment
+  // Submit property and proceed according to selected plan (Free, Weekly, Monthly)
   const handleProceedToPayment = async () => {
     setSubmitting(true);
     setError(null);
 
     try {
-      // In production, save property draft with status 'pending_payment'
       const generatedPropertyId = `prop-ks-${Date.now().toString().slice(-5)}`;
 
-      // Redirect directly to the €7 checkout workflow (Phase 7)
-      router.push(`/pagesa/${generatedPropertyId}?purpose=new_listing`);
+      // If user selected Free plan (0 € - 3 days), activate directly via API
+      if (selectedPlanId === 'free') {
+        const res = await fetch('/api/payments/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            propertyId: generatedPropertyId,
+            planId: 'free',
+            purpose: 'new_listing',
+            userEmail: formData.seller_email,
+            userName: formData.seller_name,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Dështoi aktivizimi i planit falas.');
+        }
+        router.push(`/pagesa/sukses?paymentId=${data.paymentId}&propertyId=${generatedPropertyId}&plan=free`);
+        return;
+      }
+
+      // If user selected paid plan (Weekly 2.99 € or Monthly 9.99 €)
+      router.push(`/pagesa/${generatedPropertyId}?purpose=new_listing&plan=${selectedPlanId}`);
     } catch (err: any) {
       setError(err.message || 'Dështoi ruajtja e pronës.');
       setSubmitting(false);
@@ -828,44 +851,187 @@ export default function PropertyPublishingWizard() {
             </div>
           )}
 
-          {/* STEP 8: Proceed to €7 Payment */}
+          {/* STEP 8: Zgjedhja e Planit të Publikimit */}
           {currentStep === 8 && (
-            <div className="space-y-6 text-center py-4">
-              <div className="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
-                <Euro className="w-8 h-8" />
-              </div>
-
-              <div className="max-w-md mx-auto space-y-2">
-                <h3 className="text-2xl font-black text-[#0B192C]">Gati për Publikim & Aktivizim</h3>
+            <div className="space-y-6 py-2">
+              <div className="text-center max-w-xl mx-auto space-y-2">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-2">
+                  <Euro className="w-7 h-7" />
+                </div>
+                <h3 className="text-2xl font-black text-[#0B192C]">Zgjidhni Planin e Publikimit</h3>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Prona juaj u verifikua. Për ta aktivizuar atë për <strong>30 ditë kalendarike</strong> në të gjithë Kosovën, tarifa standarde është <strong>7.00 €</strong>.
+                  Zgjidhni kohëzgjatjen që i përshtatet më së miri qëllimit tuaj. Të gjitha planet janë njëherëshe pa pagesa të fshehura dhe pa abonime automatike.
                 </p>
               </div>
 
-              <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200 max-w-sm mx-auto text-xs space-y-2 text-left">
-                <div className="flex justify-between">
-                  <span>Tarifa e publikimit:</span>
-                  <span className="font-bold text-slate-900">7.00 €</span>
+              {/* 3 Pricing Plans Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
+                {/* PLAN 1: FREE */}
+                <div
+                  onClick={() => setSelectedPlanId('free')}
+                  className={`rounded-2xl p-5 border-2 cursor-pointer transition-all flex flex-col justify-between ${
+                    selectedPlanId === 'free'
+                      ? 'border-emerald-500 bg-emerald-50/50 ring-2 ring-emerald-400/30 shadow-md'
+                      : 'border-slate-200 bg-white hover:border-slate-300'
+                  }`}
+                >
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-bold text-xs uppercase tracking-wider text-slate-700">FALAS</span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">3 Ditë</span>
+                    </div>
+                    <div className="mb-2">
+                      <span className="text-3xl font-black text-slate-900">0 €</span>
+                      <span className="text-xs text-slate-500 ml-1">/ 3 ditë</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 mb-4">
+                      Provë falas pa pagesë. Skadon automatikisht pas 3 ditësh.
+                    </p>
+                    <ul className="space-y-2 text-xs text-slate-600">
+                      {PRONAX_PRICING_PLANS.free.features.map((f, i) => (
+                        <li key={i} className="flex items-start gap-1.5">
+                          <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                          <span>{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="mt-5 pt-3 border-t border-slate-100">
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setSelectedPlanId('free'); }}
+                      className={`w-full py-2 px-3 rounded-xl text-xs font-bold transition-all ${
+                        selectedPlanId === 'free'
+                          ? 'bg-emerald-600 text-white shadow-sm'
+                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      }`}
+                    >
+                      {selectedPlanId === 'free' ? '✓ Plani i Zgjedhur' : 'Zgjidh Falas'}
+                    </button>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span>Kohëzgjatja:</span>
-                  <span className="font-bold text-slate-900">30 Ditë</span>
+
+                {/* PLAN 2: WEEKLY */}
+                <div
+                  onClick={() => setSelectedPlanId('weekly')}
+                  className={`rounded-2xl p-5 border-2 cursor-pointer transition-all flex flex-col justify-between ${
+                    selectedPlanId === 'weekly'
+                      ? 'border-emerald-500 bg-emerald-50/50 ring-2 ring-emerald-400/30 shadow-md'
+                      : 'border-slate-200 bg-white hover:border-slate-300'
+                  }`}
+                >
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-bold text-xs uppercase tracking-wider text-blue-700">JAVORE</span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">7 Ditë</span>
+                    </div>
+                    <div className="mb-2">
+                      <span className="text-3xl font-black text-slate-900">2.99 €</span>
+                      <span className="text-xs text-slate-500 ml-1">/ 7 ditë</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 mb-4">
+                      Ideale për shitje ose qiradhënie të shpejtë me kosto minimale.
+                    </p>
+                    <ul className="space-y-2 text-xs text-slate-600">
+                      {PRONAX_PRICING_PLANS.weekly.features.map((f, i) => (
+                        <li key={i} className="flex items-start gap-1.5">
+                          <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                          <span>{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="mt-5 pt-3 border-t border-slate-100">
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setSelectedPlanId('weekly'); }}
+                      className={`w-full py-2 px-3 rounded-xl text-xs font-bold transition-all ${
+                        selectedPlanId === 'weekly'
+                          ? 'bg-emerald-600 text-white shadow-sm'
+                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      }`}
+                    >
+                      {selectedPlanId === 'weekly' ? '✓ Plani i Zgjedhur' : 'Zgjidh Javore'}
+                    </button>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span>Ripërtëritje automatike:</span>
-                  <span className="font-bold text-emerald-600">Jo (0.00 €)</span>
+
+                {/* PLAN 3: MONTHLY */}
+                <div
+                  onClick={() => setSelectedPlanId('monthly')}
+                  className={`rounded-2xl p-5 border-2 cursor-pointer transition-all flex flex-col justify-between ${
+                    selectedPlanId === 'monthly'
+                      ? 'border-emerald-500 bg-emerald-50/50 ring-2 ring-emerald-400/30 shadow-md'
+                      : 'border-slate-200 bg-white hover:border-slate-300'
+                  }`}
+                >
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-bold text-xs uppercase tracking-wider text-emerald-700">MUJORE</span>
+                      <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500 text-white shadow-xs">
+                        MË E PREFERUARA
+                      </span>
+                    </div>
+                    <div className="mb-2">
+                      <span className="text-3xl font-black text-slate-900">9.99 €</span>
+                      <span className="text-xs text-slate-500 ml-1">/ 30 ditë</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 mb-4">
+                      Ekspozim maksimal në të gjithë Kosovën me vlerën më të lartë.
+                    </p>
+                    <ul className="space-y-2 text-xs text-slate-600">
+                      {PRONAX_PRICING_PLANS.monthly.features.map((f, i) => (
+                        <li key={i} className="flex items-start gap-1.5">
+                          <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                          <span>{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="mt-5 pt-3 border-t border-slate-100">
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setSelectedPlanId('monthly'); }}
+                      className={`w-full py-2 px-3 rounded-xl text-xs font-bold transition-all ${
+                        selectedPlanId === 'monthly'
+                          ? 'bg-emerald-600 text-white shadow-sm'
+                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      }`}
+                    >
+                      {selectedPlanId === 'monthly' ? '✓ Plani i Zgjedhur' : 'Zgjidh Mujore'}
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={handleProceedToPayment}
-                disabled={submitting}
-                className="w-full max-w-sm mx-auto py-3.5 px-4 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-700/20 text-sm flex items-center justify-center gap-2"
-              >
-                {submitting ? 'Duke përgatitur pagesën...' : 'Vazhdo te Pagesa e Sigurt (7.00 €)'}
-                <ArrowRight className="w-4 h-4" />
-              </button>
+              {/* Submission Box */}
+              <div className="pt-4 max-w-md mx-auto space-y-3">
+                <button
+                  type="button"
+                  onClick={handleProceedToPayment}
+                  disabled={submitting}
+                  className="w-full py-4 px-6 rounded-2xl font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-xl shadow-emerald-700/20 text-sm sm:text-base flex items-center justify-center gap-2 transition-all"
+                >
+                  {submitting ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : selectedPlanId === 'free' ? (
+                    <>
+                      <Sparkles className="w-5 h-5 text-amber-300" />
+                      <span>Publiko Pronën Falas (3 Ditë)</span>
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="w-5 h-5" />
+                      <span>Vazhdo te Pagesa e Sigurt ({getPlanById(selectedPlanId).priceEur.toFixed(2)} €)</span>
+                      <ArrowRight className="w-4 h-4 ml-1" />
+                    </>
+                  )}
+                </button>
+
+                <p className="text-[11px] text-slate-400 text-center">
+                  Pa ripërtëritje automatike. Rinovimi bëhet manualisht nga paneli juaj kur skadon afati.
+                </p>
+              </div>
             </div>
           )}
 

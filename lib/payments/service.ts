@@ -2,6 +2,11 @@ import crypto from 'crypto';
 import { PaymentAdapterFactory } from './factory';
 import { PaymentStore } from './store';
 import { 
+  PricingPlanId, 
+  PRONAX_PRICING_PLANS, 
+  getPlanById 
+} from './plans';
+import { 
   PaymentPurpose, 
   PaymentRecord, 
   PaymentSessionResult, 
@@ -10,25 +15,39 @@ import {
 } from './types';
 
 export class PaymentService {
-  // Constant fixed price: 7.00 EUR (700 cents)
-  static readonly LISTING_FEE_CENTS = 700;
   static readonly LISTING_DURATION_DAYS = 30;
+  static readonly LISTING_FEE_CENTS = 999;
 
   /**
-   * Initiates payment for a property (new publication or manual renewal).
-   * Enforces server-side 7.00 EUR fee and property status verification.
+   * Initiates payment or direct activation for a property (new publication or manual renewal).
+   * Supports 3 distinct plans:
+   * 1. Free: 0 € for 3 days (no payment gateway, direct activation/moderation)
+   * 2. Weekly: 2.99 € for 7 days (one-time card payment)
+   * 3. Monthly: 9.99 € for 30 days (one-time card payment)
    */
   static async initiatePayment(params: {
     propertyId: string;
     userId: string;
     userEmail: string;
     userName?: string;
+    planId?: PricingPlanId;
     purpose?: PaymentPurpose;
     preferredProvider?: string;
     originUrl?: string;
   }): Promise<PaymentSessionResult> {
-    const { propertyId, userId, userEmail, userName, purpose = 'new_listing', preferredProvider } = params;
+    const { 
+      propertyId, 
+      userId, 
+      userEmail, 
+      userName, 
+      planId = 'monthly',
+      purpose = 'new_listing', 
+      preferredProvider 
+    } = params;
     
+    // Selected Plan configuration
+    const plan = getPlanById(planId);
+
     // 1. Verify property existence and eligibility
     const property = await PaymentStore.getProperty(propertyId);
     if (!property) {
@@ -46,25 +65,105 @@ export class PaymentService {
       }
     }
 
-    // 2. Select Payment Adapter
-    const adapter = PaymentAdapterFactory.getAdapter(preferredProvider);
     const paymentId = `pay_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
-    const idempotencyKey = `idemp_${propertyId}_${purpose}_${Date.now()}`;
-
+    const idempotencyKey = `idemp_${propertyId}_${purpose}_${plan.id}_${Date.now()}`;
     const baseUrl = params.originUrl || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const returnUrl = `${baseUrl}/pagesa/sukses?paymentId=${paymentId}&propertyId=${propertyId}`;
+    const returnUrl = `${baseUrl}/pagesa/sukses?paymentId=${paymentId}&propertyId=${propertyId}&plan=${plan.id}`;
     const cancelUrl = `${baseUrl}/pagesa/deshtuar?paymentId=${paymentId}&propertyId=${propertyId}`;
+
+    // --- CASE A: FREE PLAN (3 DAYS - NO PAYMENT GATEWAY) ---
+    if (plan.priceCents === 0) {
+      const now = new Date();
+      const expirationDate = new Date(now.getTime() + plan.durationDays * 24 * 60 * 60 * 1000);
+      const requireModeration = process.env.REQUIRE_ADMIN_MODERATION !== 'false';
+      const nextStatus = requireModeration ? 'pending_moderation' : 'published';
+
+      const freePaymentRecord: PaymentRecord = {
+        id: paymentId,
+        property_id: propertyId,
+        user_id: userId,
+        amount_cents: 0,
+        currency: 'EUR',
+        purpose,
+        provider: 'free_plan',
+        plan_id: 'free',
+        duration_days: plan.durationDays,
+        status: 'successful',
+        payment_method: 'free_tier',
+        idempotency_key: idempotencyKey,
+        metadata: {
+          propertyTitle: property.title,
+          propertyType: property.property_type,
+          municipality: property.municipality_id,
+          userEmail,
+          planName: plan.name,
+          durationDays: plan.durationDays,
+        },
+        created_at: now.toISOString(),
+        updated_at: now.toISOString(),
+      };
+
+      await PaymentStore.createPayment(freePaymentRecord);
+
+      // Update property publication lifecycle
+      if (purpose === 'new_listing') {
+        await PaymentStore.updatePropertyStatus(property.id, nextStatus, {
+          published_at: requireModeration ? undefined : now.toISOString(),
+          expires_at: requireModeration ? undefined : expirationDate.toISOString(),
+        });
+      } else {
+        // Free Renewal: extends by 3 days
+        const prevExpires = property.expires_at ? new Date(property.expires_at) : now;
+        const baseDate = prevExpires > now ? prevExpires : now;
+        const newExpires = new Date(baseDate.getTime() + plan.durationDays * 24 * 60 * 60 * 1000);
+
+        await PaymentStore.updatePropertyStatus(property.id, 'published', {
+          expires_at: newExpires.toISOString(),
+          incrementRenewal: true,
+        });
+
+        await PaymentStore.recordRenewal({
+          property_id: property.id,
+          payment_id: paymentId,
+          previous_expires_at: property.expires_at,
+          new_expires_at: newExpires.toISOString(),
+        });
+      }
+
+      await PaymentStore.recordEvent({
+        payment_id: paymentId,
+        event_type: 'free_plan_activated',
+        provider: 'free_plan',
+        raw_payload: {
+          propertyId,
+          planId: plan.id,
+          durationDays: plan.durationDays,
+          expiresAt: expirationDate.toISOString(),
+          status: nextStatus,
+        },
+      });
+
+      return {
+        paymentId,
+        checkoutUrl: returnUrl,
+        metadata: { isFree: true, planId: plan.id, durationDays: plan.durationDays },
+      };
+    }
+
+    // --- CASE B: PAID PLANS (WEEKLY 2.99 € OR MONTHLY 9.99 €) ---
+    const adapter = PaymentAdapterFactory.getAdapter(preferredProvider);
     const callbackUrl = `${baseUrl}/api/payments/webhook/${adapter.name}`;
 
-    // 3. Save pending payment record in database
     const paymentRecord: PaymentRecord = {
       id: paymentId,
       property_id: propertyId,
       user_id: userId,
-      amount_cents: this.LISTING_FEE_CENTS, // 700 cents = 7.00 EUR
+      amount_cents: plan.priceCents,
       currency: 'EUR',
       purpose,
       provider: adapter.name,
+      plan_id: plan.id,
+      duration_days: plan.durationDays,
       status: 'pending',
       payment_method: 'card',
       idempotency_key: idempotencyKey,
@@ -73,6 +172,9 @@ export class PaymentService {
         propertyType: property.property_type,
         municipality: property.municipality_id,
         userEmail,
+        planId: plan.id,
+        planName: plan.name,
+        durationDays: plan.durationDays,
       },
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -80,7 +182,6 @@ export class PaymentService {
 
     await PaymentStore.createPayment(paymentRecord);
 
-    // 4. Audit Log
     await PaymentStore.recordEvent({
       payment_id: paymentId,
       event_type: 'payment_initiated',
@@ -88,12 +189,13 @@ export class PaymentService {
       raw_payload: {
         propertyId,
         purpose,
-        amountCents: this.LISTING_FEE_CENTS,
+        planId: plan.id,
+        amountCents: plan.priceCents,
+        durationDays: plan.durationDays,
         adapterName: adapter.name,
       },
     });
 
-    // 5. Create session via chosen provider adapter
     const session = await adapter.createSession({
       paymentId,
       propertyId,
@@ -101,9 +203,11 @@ export class PaymentService {
       userId,
       userEmail,
       userName,
-      amountCents: this.LISTING_FEE_CENTS,
+      amountCents: plan.priceCents,
       currency: 'EUR',
       purpose,
+      planId: plan.id,
+      durationDays: plan.durationDays,
       returnUrl,
       cancelUrl,
       callbackUrl,
@@ -185,7 +289,11 @@ export class PaymentService {
       // Check moderation setting (Default: true for platform safety)
       const requireModeration = process.env.REQUIRE_ADMIN_MODERATION !== 'false';
       const now = new Date();
-      const expirationDate = new Date(now.getTime() + this.LISTING_DURATION_DAYS * 24 * 60 * 60 * 1000);
+
+      // Determine duration days from selected plan (Free: 3 days, Weekly: 7 days, Monthly: 30 days)
+      const durationDays = payment.duration_days || 
+        (payment.amount_cents === 299 ? 7 : (payment.amount_cents === 0 ? 3 : 30));
+      const expirationDate = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000);
 
       if (payment.purpose === 'new_listing') {
         const nextStatus = requireModeration ? 'pending_moderation' : 'published';
@@ -201,17 +309,18 @@ export class PaymentService {
           provider: providerName,
           raw_payload: {
             newStatus: nextStatus,
+            planDurationDays: durationDays,
             publishedAt: now.toISOString(),
             expiresAt: expirationDate.toISOString(),
             requireModeration,
           },
         });
       } else if (payment.purpose === 'renewal') {
-        // Manual 30-day renewal
+        // Manual renewal based on plan duration
         const prevExpires = property.expires_at ? new Date(property.expires_at) : now;
-        // If already expired, start 30 days from now; if still active, extend by 30 days
+        // If already expired, start from now; if still active, extend by plan duration days
         const baseDate = prevExpires > now ? prevExpires : now;
-        const newExpires = new Date(baseDate.getTime() + this.LISTING_DURATION_DAYS * 24 * 60 * 60 * 1000);
+        const newExpires = new Date(baseDate.getTime() + durationDays * 24 * 60 * 60 * 1000);
 
         await PaymentStore.updatePropertyStatus(property.id, 'published', {
           expires_at: newExpires.toISOString(),
@@ -227,9 +336,10 @@ export class PaymentService {
 
         await PaymentStore.recordEvent({
           payment_id: payment.id,
-          event_type: 'listing_renewed_30_days',
+          event_type: 'listing_renewed_plan',
           provider: providerName,
           raw_payload: {
+            planDurationDays: durationDays,
             previousExpiresAt: property.expires_at,
             newExpiresAt: newExpires.toISOString(),
           },

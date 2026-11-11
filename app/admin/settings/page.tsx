@@ -28,8 +28,12 @@ export default function AdminSettingsPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const [settings, setSettings] = useState({
-    listing_fee_eur: '7.00',
-    listing_duration_days: '30',
+    plan_free_price_eur: '0.00',
+    plan_free_duration_days: '3',
+    plan_weekly_price_eur: '2.99',
+    plan_weekly_duration_days: '7',
+    plan_monthly_price_eur: '9.99',
+    plan_monthly_duration_days: '30',
     moderation_mode: 'manual',
     payment_provider: 'sandbox',
     contact_email: 'pronaxestate@outlook.com',
@@ -37,7 +41,6 @@ export default function AdminSettingsPage() {
     max_images_per_listing: '30',
     max_image_size_mb: '10',
     maintenance_mode: 'false',
-    featured_listing_addon_eur: '15.00',
   });
 
   useEffect(() => {
@@ -128,43 +131,80 @@ export default function AdminSettingsPage() {
           <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 p-6 sm:p-8 shadow-xs">
             <h2 className="text-base font-black text-slate-900 dark:text-white mb-1 flex items-center gap-2">
               <Euro className="w-4.5 h-4.5 text-emerald-600" />
-              <span>Tarifat dhe Cikli i Jetës së Shpalljes</span>
+              <span>Planet e Publikimit & Cikli i Jetës së Shpalljeve</span>
             </h2>
             <p className="text-xs text-slate-500 mb-6">
-              Rregullat qendrore të modelit të biznesit të PronaX në Kosovë.
+              Konfigurimi i 3 planeve të PronaX: Falas (3 ditë), Javore (7 ditë) dhe Mujore (30 ditë).
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs">
-              <div>
-                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-2">
-                  Tarifa Fikse e Publikimit (€)
-                </label>
-                <div className="relative">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-xs">
+              {/* Plan 1: Free */}
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 space-y-3">
+                <span className="font-black text-slate-800 dark:text-slate-200 block">PLAN 1: FALAS</span>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 mb-1">Çmimi (€)</label>
                   <input
                     type="text"
-                    value={settings.listing_fee_eur}
-                    onChange={(e) => updateSetting('listing_fee_eur', e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    disabled
+                    value="0.00 EUR"
+                    className="w-full px-3 py-2 rounded-lg bg-slate-200/60 dark:bg-slate-600 text-xs font-bold text-slate-600 dark:text-slate-300 cursor-not-allowed"
                   />
-                  <span className="absolute right-4 top-3.5 font-bold text-slate-400">EUR</span>
                 </div>
-                <p className="text-[11px] text-slate-400 mt-1">Tarifa fikse e njëhershme për çdo shpallje.</p>
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-2">
-                  Kohëzgjatja e Shpalljes (Ditë)
-                </label>
-                <div className="relative">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 mb-1">Kohëzgjatja (Ditë)</label>
                   <input
                     type="number"
-                    value={settings.listing_duration_days}
-                    onChange={(e) => updateSetting('listing_duration_days', e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    value={settings.plan_free_duration_days}
+                    onChange={(e) => updateSetting('plan_free_duration_days', e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-xs font-bold"
                   />
-                  <span className="absolute right-4 top-3.5 font-bold text-slate-400">DITË</span>
                 </div>
-                <p className="text-[11px] text-slate-400 mt-1">Pas kësaj periudhe prona skadon automatikisht.</p>
+              </div>
+
+              {/* Plan 2: Weekly */}
+              <div className="p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 space-y-3">
+                <span className="font-black text-blue-800 dark:text-blue-300 block">PLAN 2: JAVORE</span>
+                <div>
+                  <label className="block text-[11px] font-bold text-blue-700 dark:text-blue-400 mb-1">Çmimi (€)</label>
+                  <input
+                    type="text"
+                    value={settings.plan_weekly_price_eur}
+                    onChange={(e) => updateSetting('plan_weekly_price_eur', e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-700 text-xs font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-blue-700 dark:text-blue-400 mb-1">Kohëzgjatja (Ditë)</label>
+                  <input
+                    type="number"
+                    value={settings.plan_weekly_duration_days}
+                    onChange={(e) => updateSetting('plan_weekly_duration_days', e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-700 text-xs font-bold"
+                  />
+                </div>
+              </div>
+
+              {/* Plan 3: Monthly */}
+              <div className="p-4 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 space-y-3">
+                <span className="font-black text-emerald-800 dark:text-emerald-300 block">PLAN 3: MUJORE</span>
+                <div>
+                  <label className="block text-[11px] font-bold text-emerald-700 dark:text-emerald-400 mb-1">Çmimi (€)</label>
+                  <input
+                    type="text"
+                    value={settings.plan_monthly_price_eur}
+                    onChange={(e) => updateSetting('plan_monthly_price_eur', e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700 text-xs font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-emerald-700 dark:text-emerald-400 mb-1">Kohëzgjatja (Ditë)</label>
+                  <input
+                    type="number"
+                    value={settings.plan_monthly_duration_days}
+                    onChange={(e) => updateSetting('plan_monthly_duration_days', e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700 text-xs font-bold"
+                  />
+                </div>
               </div>
             </div>
           </div>

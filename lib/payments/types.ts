@@ -8,16 +8,18 @@ export type PaymentStatus =
 
 export type PaymentPurpose = 'new_listing' | 'renewal';
 
-export type PaymentProvider = 'paysera' | 'procredit_pos' | 'nlb_pos' | 'sandbox';
+export type PaymentProvider = 'paysera' | 'procredit_pos' | 'nlb_pos' | 'sandbox' | 'free_plan';
 
 export interface PaymentRecord {
   id: string;
   property_id: string;
   user_id: string;
-  amount_cents: number; // e.g., 700 for 7.00 EUR
+  amount_cents: number; // 0 for Free, 299 for Weekly (2.99 €), 999 for Monthly (9.99 €)
   currency: string;     // 'EUR'
   purpose: PaymentPurpose;
   provider: PaymentProvider;
+  plan_id?: 'free' | 'weekly' | 'monthly';
+  duration_days?: number;
   provider_transaction_id?: string | null;
   provider_fee_cents?: number | null;
   status: PaymentStatus;
@@ -79,8 +81,10 @@ export interface CreatePaymentSessionParams {
   userId: string;
   userEmail: string;
   userName?: string;
-  amountCents: number; // Must be 700
+  amountCents: number; // 299 for 2.99 EUR or 999 for 9.99 EUR
   currency: string;    // Must be EUR
+  planId?: 'free' | 'weekly' | 'monthly';
+  durationDays?: number;
   purpose: PaymentPurpose;
   returnUrl: string;
   cancelUrl: string;

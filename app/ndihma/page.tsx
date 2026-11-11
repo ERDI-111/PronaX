@@ -32,19 +32,19 @@ const HELP_ARTICLES: HelpArticle[] = [
     id: 'h1',
     category: 'pagesat',
     question: 'Sa kushton publikimi i një prone në PronaX?',
-    answer: 'Publikimi i çdo prone në PronaX kushton saktësisht 7.00 € (tarifë fikse e njëhershme). Nuk ka asnjë tarifë të fshehur, abonim mujor apo ripërtëritje automatike.',
+    answer: 'PronaX ofron tre plane: Plani Falas (0 € për 3 ditë), Plani Javor (2.99 € për 7 ditë) dhe Plani Mujor (9.99 € për 30 ditë). Nuk ka asnjë tarifë të fshehur, abonim mujor apo ripërtëritje automatike.',
   },
   {
     id: 'h2',
     category: 'publikimi',
-    question: 'Sa kohë mbetet prona aktive pas pagesës?',
-    answer: 'Çdo shpallje e paguar dhe e miratuar mbetet plotësisht aktive për ekzaktësisht 30 ditë kalendarike. Pas 30 ditëve, prona kalon automatikisht në statusin "e skaduar" dhe hiqet nga kërkimi publik dhe harta.',
+    question: 'Sa kohë mbetet prona aktive pas publikimit?',
+    answer: 'Çdo shpallje mbetet aktive ekzaktësisht për afatin e planit të zgjedhur: 3 ditë për planin falas, 7 ditë për planin javor dhe 30 ditë për planin mujor. Pas kësaj, prona kalon automatikisht në statusin "e skaduar" dhe hiqet nga kërkimi publik dhe harta.',
   },
   {
     id: 'h3',
     category: 'pagesat',
     question: 'Si bëhet rinovimi i shpalljes pas skadimit?',
-    answer: 'Rinovimi bëhet manualisht nga paneli juaj i përdoruesit ("Pronat e Mia"). Për të riaktivizuar pronën për 30 ditë të tjera, kryhet një pagesë e re prej 7.00 €. Sistemi ynë nuk bën kurrë debitime automatike në kartelën tuaj bankare.',
+    answer: 'Rinovimi bëhet manualisht nga paneli juaj i përdoruesit ("Pronat e Mia"). Mund të zgjidhni cilindo plan të ri (Falas, Javor ose Mujor). Sistemi ynë nuk bën kurrë debitime automatike në kartelën tuaj bankare.',
   },
   {
     id: 'h4',
@@ -94,7 +94,7 @@ export default function HelpCenterPage() {
   const categories = [
     { id: 'all', label: 'Të Gjitha' },
     { id: 'pagesat', label: 'Tarifat & Pagesat' },
-    { id: 'publikimi', label: 'Publikimi 30-Ditor' },
+    { id: 'publikimi', label: 'Planet e Publikimit' },
     { id: 'agjencite', label: 'Agjencitë & ARBK' },
     { id: 'siguria', label: 'Siguria & Privatësia' },
     { id: 'lokacionet', label: 'Komunat e Kosovës' },
@@ -115,7 +115,7 @@ export default function HelpCenterPage() {
             Si mund t&apos;ju ndihmojmë sot?
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
-            Gjeni përgjigje të shpejta rreth publikimit, pagesës fikse 7 €, rregullit 30-ditor dhe sigurisë në PronaX.
+            Gjeni përgjigje të shpejta rreth publikimit, 3 planeve të PronaX dhe sigurisë.
           </p>
 
           {/* Search Box */}
@@ -125,7 +125,7 @@ export default function HelpCenterPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Kërkoni pyetje, p.sh. tarifa 7 €, skadimi, agjencitë..."
+              placeholder="Kërkoni pyetje, p.sh. planet, skadimi, agjencitë..."
               className="w-full pl-12 pr-4 py-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-xs"
             />
           </div>
