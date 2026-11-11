@@ -223,15 +223,15 @@ export class PronaXTestSuite {
         throw new Error('Historiku i rinovimeve në bazën e të dhënave dështoi.');
       }
       return {
-        name: 'Rinovimi Manual (7.00 €)',
+        name: 'Rinovimi Manual sipas Planit',
         category: 'payment',
         status: 'passed',
-        message: 'Rinovimi manual ruan auditimin e plotë, shton 30 ditë dhe ruan numrin e rinovimeve.',
+        message: 'Rinovimi manual ruan auditimin e plotë, shton ditët sipas planit dhe ruan numrin e rinovimeve.',
         durationMs: Date.now() - t0,
       };
     } catch (e: any) {
       return {
-        name: 'Rinovimi Manual (7.00 €)',
+        name: 'Rinovimi Manual sipas Planit',
         category: 'payment',
         status: 'failed',
         message: e.message,

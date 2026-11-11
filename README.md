@@ -122,9 +122,9 @@ WHERE email = 'pronaxestate@outlook.com';
 
 ### Sandbox (Testim - i aktivizuar automatikisht)
 - Nis shërbimin: `PAYMENT_PROVIDER=sandbox`
-- Shko te `/pagesa/[propertyId]` → kliko "Paguaj 7 €"
-- Do ridrejtohet te `/pagesa/sandbox-checkout`
-- Simulon pagesë të suksesshme/dështuar
+- Shko te `/pagesa/[propertyId]` → zgjidh njërin nga 3 planet (Falas 0 €, Javor 2.99 €, Mujor 9.99 €)
+- Për planet me pagesë, ridrejtohet te `/pagesa/sandbox-checkout`
+- Simulon pagesë të suksesshme/dështuar me kartë Visa/Mastercard
 
 ### Paysera (Prodhim)
 1. Regjistrohu te [paysera.com](https://paysera.com) si tregtar
@@ -199,7 +199,7 @@ WHERE email = 'pronaxestate@outlook.com';
 | `/agjencite` | Lista e agjencive |
 | `/agjencite/[slug]` | Profili i agjencisë |
 | `/publiko` | Magjistar i publikimit (8 hapa) |
-| `/pagesa/[propertyId]` | Pagesa 7 € |
+| `/pagesa/[propertyId]` | Zgjedhja e Planit & Pagesa |
 | `/pagesa/sukses` | Konfirmim pagese |
 | `/pagesa/deshtuar` | Pagesa dështoi |
 | `/dashboard/pronat` | Pronat e mia |
@@ -294,22 +294,29 @@ CNAME resend  (nga Resend dashboard)
 
 ---
 
-## 📊 Sistemi i Pagesave 7 €
+## 📊 Sistemi i 3 Planeve të Publikimit
+
+| Plani | Çmimi | Kohëzgjatja | Pagesa |
+|---|---|---|---|
+| **Falas** (`free`) | **0.00 €** | **3 ditë** | Pa pagesë (one-time) |
+| **Javor** (`weekly`) | **2.99 €** | **7 ditë** | Visa / Mastercard |
+| **Mujor** (`monthly`) | **9.99 €** | **30 ditë** | Visa / Mastercard |
 
 ### Workflow i plotë:
 1. Pronari plotëson magjistarin 8-hapësh
-2. Prona ruhet me status `pending_payment`
-3. Hap faqen `/pagesa/[propertyId]`
-4. Server krijon transaction me `idempotency_key`
-5. Ridrejtohet te ofruesi i pagesave
-6. Ofruesi dërgon **webhook server-to-server**
-7. Server verifikon nënshkrimin e webhook
-8. Server kontrollon shumën (700 EUR cents = 7.00 €)
-9. Server nuk procceson të njëjtin `idempotency_key` dy herë
-10. Prona kalon te status `pending_moderation`
-11. Administratori miraton → `published`
-12. Publikimet skadojnë pas 30 ditësh automatikisht
-13. Rinovimi kërkon pagesë tjetër manuale prej 7 €
+2. Në hapin e fundit zgjedh planin (Falas / Javor / Mujor)
+3. Për planin Falas, prona aktivizohet direkt pas moderimit
+4. Për planet me pagesë, hapet faqja `/pagesa/[propertyId]`
+5. Server krijon transaksionin me `idempotency_key`
+6. Ridrejtohet te ofruesi i pagesave (Visa/Mastercard)
+7. Ofruesi dërgon **webhook server-to-server**
+8. Server verifikon nënshkrimin kriptografik të webhook
+9. Server kontrollon shumën sipas planit (299 cent ose 999 cent)
+10. Server nuk proceson të njëjtin `idempotency_key` dy herë
+11. Prona kalon te status `pending_moderation` (ose `published` në varësi të settings)
+12. Administratori miraton → `published`
+13. Publikimet skadojnë sipas planit (3 ditë, 7 ditë ose 30 ditë)
+14. Rinovimi kërkon zgjedhje të re manuale të planit — **pa debitim automatik**
 
 ### Statuset e pagesës:
 - `pending` → `processing` → `successful` → Prona aktive

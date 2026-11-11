@@ -89,7 +89,7 @@ function PaymentSuccessContent() {
               Faleminderit! Prona juaj u aktivizua.
             </h1>
             <p className="text-sm text-slate-600 max-w-md mx-auto mt-2">
-              Tarifa prej <strong>7.00 €</strong> u procesua me sukses. Publikimi juaj është i vlefshëm për saktësisht <strong>30 ditë</strong>.
+              Transaksioni u procesua me sukses. Publikimi juaj është i vlefshëm sipas planit të zgjedhur.
             </p>
 
             <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs">
@@ -158,10 +158,10 @@ function PaymentSuccessContent() {
               <div className="p-3.5 rounded-xl bg-emerald-50/50 border border-emerald-100">
                 <span className="text-emerald-800 font-medium block mb-0.5 flex items-center gap-1">
                   <Clock className="w-3.5 h-3.5 text-emerald-600" />
-                  Data e Skadimit (30 ditë):
+                  Data e Skadimit:
                 </span>
                 <span className="font-bold text-emerald-900">
-                  {data?.property?.expiresAt ? new Date(data.property.expiresAt).toLocaleDateString('sq-AL') : 'Pas 30 ditësh'}
+                  {data?.property?.expiresAt ? new Date(data.property.expiresAt).toLocaleDateString('sq-AL') : 'Sipas planit'}
                 </span>
               </div>
             </div>

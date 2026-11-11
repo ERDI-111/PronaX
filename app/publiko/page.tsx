@@ -247,7 +247,7 @@ export default function PropertyPublishingWizard() {
               <Sparkles className="w-4 h-4 text-emerald-600" />
               <span>Hapi {currentStep} nga 8</span>
             </span>
-            <span className="text-slate-400">Tarifa e publikimit: 7.00 € (30 ditë)</span>
+            <span className="text-slate-400">3 Planet: Falas, Javor ose Mujor</span>
           </div>
 
           <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
@@ -267,7 +267,7 @@ export default function PropertyPublishingWizard() {
               {currentStep === 5 && 'Hapi 5: Fotografitë dhe Mediat (1–30 Foto)'}
               {currentStep === 6 && 'Hapi 6: Informacionet e Shitësit'}
               {currentStep === 7 && 'Hapi 7: Pamja Paraprake e Shpalljes'}
-              {currentStep === 8 && 'Hapi 8: Pagesa e Sigurt & Aktivizimi (7.00 €)'}
+              {currentStep === 8 && 'Hapi 8: Zgjedhja e Planit & Aktivizimi'}
             </h1>
           </div>
         </div>

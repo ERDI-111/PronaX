@@ -92,19 +92,19 @@ export default function MyPropertiesPage() {
               <span>Pronat e Mia</span>
             </div>
             <h1 className="text-3xl font-black text-[#0B192C] tracking-tight">
-              Menaxhimi i Pronave & Cikli 30-Ditor
+              Menaxhimi i Pronave & Cikli i Publikimit
             </h1>
             <p className="text-sm text-slate-600 mt-1">
-              Mbikëqyr kohëzgjatjen e publikimit, prano alarme para skadimit dhe rinovo manualisht me <strong>7.00 €</strong>.
+              Mbikëqyr kohëzgjatjen e publikimit sipas planit, prano alarme para skadimit dhe rinovo manualisht kur dëshiron.
             </p>
           </div>
 
           <Link
-            href="/pagesa/prop-ks-101"
+            href="/publiko"
             className="self-start sm:self-auto px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-emerald-700/20 transition-all"
           >
             <PlusCircle className="w-4 h-4" />
-            <span>Publiko Pronë të Re (7 €)</span>
+            <span>Publiko Pronë të Re</span>
           </Link>
         </div>
 
@@ -318,7 +318,7 @@ export default function MyPropertiesPage() {
                             href={`/pagesa/${prop.id}`}
                             className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl font-bold text-xs text-white bg-[#0B192C] hover:bg-[#1E3E62] transition-colors flex items-center justify-center gap-1.5"
                           >
-                            <span>Paguaj 7.00 €</span>
+                            <span>Zgjidh Planin & Vazhdo</span>
                             <ArrowRight className="w-3.5 h-3.5" />
                           </Link>
                         )}
@@ -328,7 +328,7 @@ export default function MyPropertiesPage() {
                           <button
                             onClick={() => openRenewalHistory(prop)}
                             className="px-3 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors"
-                            title="Shiko historikun e rinovimeve 30-ditore"
+                            title="Shiko historikun e rinovimeve"
                           >
                             <History className="w-3.5 h-3.5 text-slate-500" />
                             <span className="hidden sm:inline">Historiku</span>
@@ -343,7 +343,7 @@ export default function MyPropertiesPage() {
                     <div className="mt-4 pt-3 border-t border-red-100 flex items-center justify-between text-xs text-red-800 bg-red-50/50 p-2.5 rounded-xl">
                       <div className="flex items-center gap-2">
                         <XCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
-                        <span>Kjo pronë është hequr nga rezultatet publike dhe harta. Rinovoni me 7.00 € për ta rishfaqur për 30 ditë të tjera.</span>
+                        <span>Kjo pronë ka skaduar dhe është hequr nga kërkimi publik. Zgjidhni një plan për ta riaktivizuar.</span>
                       </div>
                       <Link
                         href={`/pagesa/${prop.id}?purpose=renewal`}

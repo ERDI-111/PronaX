@@ -48,7 +48,7 @@ function PaymentFailedContent() {
             className="w-full py-3.5 px-4 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-500 active:scale-95 transition-all flex items-center justify-center gap-2 text-sm shadow-md shadow-emerald-700/20"
           >
             <RefreshCw className="w-4 h-4" />
-            <span>Provo Përsëri Pagesën (7.00 €)</span>
+            <span>Provo Përsëri Pagesën</span>
           </Link>
 
           <Link

@@ -23,7 +23,7 @@
     Tregu zyrtar i patundshmërive në 38 komunat e Republikës së Kosovës.
   </text>
   <text x="120" y="445" fill="#94A3B8" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="500">
-    Banesa, shtëpi, troje dhe lokale me tarifë fikse 7.00 € për 30 ditë.
+    Banesa, shtëpi, troje dhe lokale me 3 plane fleksibile të publikimit.
   </text>
 
   <!-- Badges / Highlights bottom -->
@@ -33,7 +33,7 @@
   </g>
   <g transform="translate(360, 510)">
     <rect width="240" height="50" rx="12" fill="#1E293B" stroke="#334155"/>
-    <text x="120" y="32" fill="#E2E8F0" font-family="system-ui, sans-serif" font-size="18" font-weight="700" text-anchor="middle">✓ Tarifë 7 € / 30 Ditë</text>
+    <text x="120" y="32" fill="#E2E8F0" font-family="system-ui, sans-serif" font-size="18" font-weight="700" text-anchor="middle">✓ 3 Planet | Pa Abonime</text>
   </g>
   <g transform="translate(620, 510)">
     <rect width="220" height="50" rx="12" fill="#1E293B" stroke="#334155"/>

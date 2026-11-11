@@ -46,7 +46,7 @@ export default function AboutPage() {
             </div>
             <h2 className="text-xl font-bold text-[#0B192C]">Transparencë dhe Siguri</h2>
             <p className="text-sm text-slate-600 leading-relaxed">
-              Modeli ynë i qartë me tarifë fikse prej <strong>7.00 € për 30 ditë</strong> garanton që çdo shpallje është aktive, e freskët dhe e vlefshme. Në PronaX nuk ka abonime të fshehura apo ripërtëritje automatike që ngarkojnë kartelën e përdoruesit.
+              Modeli ynë i qartë me <strong>3 plane transparente (Falas 3 ditë, Javor 2.99 €, Mujor 9.99 €)</strong> garanton që çdo shpallje është aktive, e freskët dhe e vlefshme. Në PronaX nuk ka abonime të fshehura apo ripërtëritje automatike që ngarkojnë kartelën e përdoruesit.
             </p>
           </div>
         </div>

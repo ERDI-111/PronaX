@@ -106,7 +106,7 @@ export class ExpirationService {
             property_id: prop.id,
             type: 'property_expired',
             title: 'Prona juaj ka skaduar',
-            message: `Periudha 30-ditore e publikimit për pronën "${prop.title}" ka përfunduar. Ajo nuk shfaqet më publikisht. Mund ta rinovoni manualisht për 30 ditë shtesë me tarifën 7.00 €.`,
+            message: `Periudha e publikimit për pronën "${prop.title}" ka përfunduar. Ajo nuk shfaqet më publikisht. Mund ta rinovoni manualisht duke zgjedhur një plan të ri.`,
             action_url: `/pagesa/${prop.id}?purpose=renewal`,
           });
 
@@ -142,7 +142,7 @@ export class ExpirationService {
             property_id: prop.id,
             type: 'expiration_warning_1d',
             title: 'Urgjente: Prona juaj skadon nesër!',
-            message: `Kanë mbetur më pak se 24 orë deri në skadimin e pronës "${prop.title}". Rinovoni me 7.00 € për të ruajtur vazhdimësinë e publikimit.`,
+            message: `Kanë mbetur më pak se 24 orë deri në skadimin e pronës "${prop.title}". Rinovoni me një plan të ri për të ruajtur vazhdimësinë e publikimit.`,
             action_url: `/pagesa/${prop.id}?purpose=renewal`,
           });
 
@@ -167,7 +167,7 @@ export class ExpirationService {
             property_id: prop.id,
             type: 'expiration_warning_3d',
             title: 'Kujdes: Prona juaj skadon pas 3 ditësh',
-            message: `Publikimi i pronës "${prop.title}" përfundon pas 3 ditësh. Rinovoni para skadimit me tarifën fikse prej 7.00 €.`,
+            message: `Publikimi i pronës "${prop.title}" përfundon pas 3 ditësh. Rinovoni para skadimit duke zgjedhur një plan të ri.`,
             action_url: `/pagesa/${prop.id}?purpose=renewal`,
           });
 

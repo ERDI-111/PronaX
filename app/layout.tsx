@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     template: "%s | PronaX Kosovë",
   },
   description:
-    "Tregu kryesor i pasurive të paluajtshme në Republikën e Kosovës. Gjej banesa, shtëpi, troje dhe lokale afariste në të gjitha 38 komunat e Kosovës. Publiko me tarifë fikse 7.00 € për 30 ditë.",
+    "Tregu kryesor i pasurive të paluajtshme në Republikën e Kosovës. Gjej banesa, shtëpi, troje dhe lokale afariste në të gjitha 38 komunat e Kosovës. Publiko me planet tona transparente: Falas (3 ditë), Javor (2.99 €) ose Mujor (9.99 €).",
   keywords: [
     "PronaX", "prona ne kosove", "patundshmeri prishtine",
     "banesa ne shitje kosove", "shtepi ne shitje prizren",
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://pronax-ks.com"),
   openGraph: {
     title: "PronaX | Prona që kërkon. Shtëpia që meriton.",
-    description: "Tregu modern dhe i sigurt i patundshmërive në të gjithë Kosovën. 800+ prona aktive.",
+    description: "Tregu modern dhe i sigurt i patundshmërive në të gjithë Kosovën.",
     url: "https://pronax-ks.com",
     siteName: "PronaX Kosovë",
     locale: "sq_AL",

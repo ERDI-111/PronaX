@@ -59,7 +59,7 @@ export class EmailTemplateRenderer {
         const html = wrapEmail(`
           <h1>Përshëndetje ${data.name || 'Përdorues'},</h1>
           <p>Mirëseerdhët në platformën kryesore të pasurive të paluajtshme në të gjithë Republikën e Kosovës.</p>
-          <p>Tani mund të hulumtoni prona në të 38 komunat, të ruani kërkimet tuaja të preferuara ose të publikoni pronën tuaj me tarifën fikse prej <strong>7.00 € për 30 ditë</strong>.</p>
+          <p>Tani mund të hulumtoni prona në të 38 komunat, të ruani kërkimet tuaja të preferuara ose të publikoni pronën tuaj me <strong>3 planet tona: Falas (3 ditë), Javor (2.99 €) ose Mujor (9.99 €)</strong>.</p>
           <a href="${baseUrl}/dashboard/pronat" class="cta-btn">Shko te Paneli Juaj</a>
           <p style="color: #64748b; font-size: 12px; margin-top: 24px;">Nëse keni nevojë për ndihmë, na kontaktoni në çdo kohë në pronaxestate@outlook.com.</p>
         `, 'Mirëseerdhët në PronaX - Tregu i Patundshmërive në Kosovë');
@@ -126,21 +126,23 @@ export class EmailTemplateRenderer {
       }
 
       case 'payment_success': {
-        const subject = `Dëshmi Pagese: 7.00 € për pronën "${data.propertyTitle || 'PronaX'}"`;
+        const amount = data.amount || (data.amountCents ? (data.amountCents / 100).toFixed(2) : '9.99');
+        const duration = data.durationDays ? `${data.durationDays} Ditë` : 'Sipas planit';
+        const subject = `Dëshmi Pagese: ${amount} € për pronën "${data.propertyTitle || 'PronaX'}"`;
         const html = wrapEmail(`
           <h1>Pagesa u Konfirmua me Sukses!</h1>
-          <p>Kemi pranuar pagesën tuaj prej <strong>7.00 €</strong> për publikimin e pronës suaj në PronaX.</p>
+          <p>Kemi pranuar pagesën tuaj prej <strong>${amount} €</strong> për publikimin e pronës suaj në PronaX.</p>
           <div class="info-card">
             <div style="font-weight: 700; color: #0B192C; margin-bottom: 8px;">Detajet e Transaksionit:</div>
             <div><strong>Prona:</strong> ${data.propertyTitle || 'Banesë në Kosovë'}</div>
-            <div><strong>Shuma e Paguar:</strong> 7.00 € (EUR)</div>
-            <div><strong>Vlefshmëria e Publikimit:</strong> 30 Ditë Kalendarike</div>
+            <div><strong>Shuma e Paguar:</strong> ${amount} € (EUR)</div>
+            <div><strong>Vlefshmëria e Publikimit:</strong> ${duration}</div>
             <div><strong>Referenca:</strong> <code>${data.paymentId || 'TX-2026'}</code></div>
-            <div><strong>Lloji:</strong> ${data.purpose === 'renewal' ? 'Rinovim 30-ditor' : 'Publikim i ri'}</div>
+            <div><strong>Lloji:</strong> ${data.purpose === 'renewal' ? 'Rinovim' : 'Publikim i ri'}</div>
           </div>
           <p>Publikimi juaj është i mbrojtur. Nuk ka asnjë pagesë të fshehur apo ripërtëritje automatike.</p>
           <a href="${baseUrl}/pagesa/sukses?paymentId=${data.paymentId}" class="cta-btn">Shiko Faturën Digjitale</a>
-        `, 'Pagesa prej 7.00 € u konfirmua me sukses');
+        `, `Pagesa prej ${amount} € u konfirmua me sukses`);
         return { subject, html };
       }
 
@@ -151,7 +153,7 @@ export class EmailTemplateRenderer {
           <p>Prona juaj <strong>"${data.propertyTitle}"</strong> u miratua dhe është e dukshme për mijëra blerës potencialë në të gjithë Kosovën.</p>
           <div class="info-card">
             <div><strong>Data e Aktivizimit:</strong> ${data.publishedAt || new Date().toLocaleDateString('sq-AL')}</div>
-            <div><strong>Data e Skadimit (30 ditë):</strong> ${data.expiresAt || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('sq-AL')}</div>
+            <div><strong>Data e Skadimit:</strong> ${data.expiresAt || 'Sipas planit'}</div>
             <div><strong>Statusi:</strong> E Publikuar dhe Aktive</div>
           </div>
           <a href="${baseUrl}/dashboard/pronat" class="cta-btn">Shiko Pronën Tënde</a>
@@ -179,9 +181,9 @@ export class EmailTemplateRenderer {
         const renewalUrl = `${baseUrl}/pagesa/${data.propertyId}?purpose=renewal`;
         const html = wrapEmail(`
           <h1 style="color: #b45309;">Paralajmërim Skadimi (3 Ditë të Mbetura)</h1>
-          <p>Publikimi 30-ditor i pronës suaj <strong>"${data.propertyTitle}"</strong> do të përfundojë më <strong>${data.expiresAt}</strong>.</p>
-          <p>Për të ruajtur vazhdimësinë e shfaqjes në hartë dhe kërkimet e blerësve, mund ta rinovoni pronën me tarifën standarde prej <strong>7.00 €</strong>.</p>
-          <a href="${renewalUrl}" class="cta-btn" style="background-color: #d97706;">Rinovo Pronën – 7 €</a>
+          <p>Publikimi i pronës suaj <strong>"${data.propertyTitle}"</strong> do të përfundojë më <strong>${data.expiresAt}</strong>.</p>
+          <p>Për të ruajtur vazhdimësinë e shfaqjes në hartë dhe kërkimet e blerësve, mund ta rinovoni pronën duke zgjedhur një plan të ri.</p>
+          <a href="${renewalUrl}" class="cta-btn" style="background-color: #d97706;">Zgjidh Planin & Rinovo</a>
           <p style="color: #64748b; font-size: 12px;">Rinovimi është tërësisht manual. Kartela juaj nuk do të tarifohet kurrë automatikisht.</p>
         `, 'Prona juaj në PronaX skadon pas 3 ditësh');
         return { subject, html };
@@ -193,37 +195,37 @@ export class EmailTemplateRenderer {
         const html = wrapEmail(`
           <h1 style="color: #dc2626;">Urgjente: Kanë Mbetur më Pak se 24 Orë!</h1>
           <p>Afati i publikimit për pronën <strong>"${data.propertyTitle}"</strong> skadon nesër. Nëse nuk rinovohet, ajo do të hiqet automatikisht nga kërkimi publik.</p>
-          <a href="${renewalUrl}" class="cta-btn" style="background-color: #dc2626;">Rinovo Tani me 7.00 €</a>
+          <a href="${renewalUrl}" class="cta-btn" style="background-color: #dc2626;">Zgjidh Planin & Rinovo</a>
           <p style="color: #64748b; font-size: 12px;">Prona mbetet e ruajtur në mënyrë të sigurt në panelin tuaj edhe pas skadimit.</p>
         `, 'Kanë mbetur më pak se 24 orë deri në skadim');
         return { subject, html };
       }
 
       case 'expired': {
-        const subject = `Prona juaj "${data.propertyTitle}" ka skaduar – Rinovoni me 7 €`;
+        const subject = `Prona juaj "${data.propertyTitle}" ka skaduar – Riaktivizoni shpalljen`;
         const renewalUrl = `${baseUrl}/pagesa/${data.propertyId}?purpose=renewal`;
         const html = wrapEmail(`
           <h1>Prona Juaj ka Skaduar</h1>
-          <p>Periudha 30-ditore për pronën <strong>"${data.propertyTitle}"</strong> ka përfunduar.</p>
+          <p>Periudha e publikimit për pronën <strong>"${data.propertyTitle}"</strong> ka përfunduar.</p>
           <p>Prona është hequr nga rezultatet publike të kërkimit dhe harta, por të gjitha të dhënat, fotografitë dhe përshkrimi mbeten të ruajtura të paprekura në llogarinë tuaj.</p>
-          <p>Për ta riaktivizuar pronën për <strong>30 ditë shtesë</strong>, klikoni butonin më poshtë:</p>
-          <a href="${renewalUrl}" class="cta-btn">Rinovo Pronën – 7.00 €</a>
-        `, 'Prona juaj ka skaduar - Rinovoni me 7 €');
+          <p>Për ta riaktivizuar pronën, zgjidhni njërin nga 3 planet tona:</p>
+          <a href="${renewalUrl}" class="cta-btn">Zgjidh Planin & Riaktivizo</a>
+        `, 'Prona juaj ka skaduar - Riaktivizoni shpalljen');
         return { subject, html };
       }
 
       case 'renewed': {
-        const subject = `Prona juaj "${data.propertyTitle}" u rinovua me sukses për 30 ditë`;
+        const subject = `Prona juaj "${data.propertyTitle}" u rinovua me sukses`;
         const html = wrapEmail(`
           <h1>Rinovimi u Krye me Sukses!</h1>
-          <p>Faleminderit! Kemi pranuar pagesën tuaj prej <strong>7.00 €</strong> dhe prona juaj <strong>"${data.propertyTitle}"</strong> u rinovua me sukses.</p>
+          <p>Faleminderit! Prona juaj <strong>"${data.propertyTitle}"</strong> u rinovua me sukses.</p>
           <div class="info-card">
-            <div><strong>Afati i Ri i Skadimit:</strong> ${data.newExpiresAt} (30 Ditë Kalendarike)</div>
+            <div><strong>Afati i Ri i Skadimit:</strong> ${data.newExpiresAt || 'Sipas planit'}</div>
             <div><strong>Numri i Rinovimeve:</strong> #${data.renewalCount || 1}</div>
             <div><strong>Statusi:</strong> E Publikuar dhe Aktive</div>
           </div>
           <a href="${baseUrl}/dashboard/pronat" class="cta-btn">Shiko në Panelin Tuaj</a>
-        `, 'Prona juaj u rinovua me sukses për 30 ditë');
+        `, 'Prona juaj u rinovua me sukses');
         return { subject, html };
       }
 

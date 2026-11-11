@@ -115,7 +115,7 @@ export default function SystemHealthPage() {
               </span>
             </div>
             <span className="text-[11px] text-slate-500 block">
-              Tarifa fikse 7.00 € (30 ditë)
+              3 Planet: Falas (3d), Javor (7d), Mujor (30d)
             </span>
           </div>
 

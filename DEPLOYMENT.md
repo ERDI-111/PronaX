@@ -43,9 +43,8 @@ PAYMENT_API_SECRET=fjalekalimi_i_nenshkrimit
 PAYMENT_WEBHOOK_SECRET=sekreti_unik_i_webhook_tuaj
 PAYSERA_TEST_MODE=0
 
-# Rregullat e Biznesit (Faza 7 & 8)
-LISTING_FEE_EUR=7.00
-LISTING_DURATION_DAYS=30
+# Rregullat e Biznesit (3 Planet e Publikimit)
+# Free: 0.00 EUR (3 ditë), Weekly: 2.99 EUR (7 ditë), Monthly: 9.99 EUR (30 ditë)
 REQUIRE_ADMIN_MODERATION=true
 
 # Siguria e Cron-it (Faza 8)
@@ -56,10 +55,10 @@ NEXT_PUBLIC_SUPABASE_URL=https://projekti-juaj.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=celes_publik_anon
 SUPABASE_SERVICE_ROLE_KEY=celes_sekret_service_role
 
-# Google Maps (Faza 4)
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=celes_i_google_maps
+# Google Maps / OpenStreetMap Leaflet
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=celes_i_google_maps_opsional
 
-# Emailet (Resend - Faza 9)
+# Emailet (Resend - Faza 9 & 2FA OTP)
 RESEND_API_KEY=re_celes_juaj_nga_resend
 EMAIL_FROM=PronaX Kosovë <njoftime@pronax-ks.com>
 ADMIN_NOTIFICATION_EMAIL=pronaxestate@outlook.com
@@ -77,16 +76,20 @@ ADMIN_NOTIFICATION_EMAIL=pronaxestate@outlook.com
 ## 3. Ekzekutimi i Migrimeve në Supabase (PostgreSQL)
 
 Hapni panelin e projektit në Supabase (SQL Editor) dhe ekzekutoni skriptat me radhë:
-1. Skripta e Fazës 7: [`supabase/migrations/20261109_phase7_payments.sql`](supabase/migrations/20261109_phase7_payments.sql)
-2. Skripta e Fazës 8: [`supabase/migrations/20261109_phase8_expiration_renewal.sql`](supabase/migrations/20261109_phase8_expiration_renewal.sql)
+1. Skripta Bazë e Pagesave: [`supabase/migrations/20261109_phase7_payments.sql`](supabase/migrations/20261109_phase7_payments.sql)
+2. Skripta e Skadimeve: [`supabase/migrations/20261109_phase8_expiration_renewal.sql`](supabase/migrations/20261109_phase8_expiration_renewal.sql)
+3. Përditësimi i Email-it Admin: [`supabase/migrations/20261111_update_admin_email.sql`](supabase/migrations/20261111_update_admin_email.sql)
+4. Sistemi 3-Planësh i Çmimeve: [`supabase/migrations/20261111_payment_plans.sql`](supabase/migrations/20261111_payment_plans.sql)
+5. Verifikimi me Kod 6-Shifror (2FA): [`supabase/migrations/20261111_auth_verification.sql`](supabase/migrations/20261111_auth_verification.sql)
+6. *(Opsionale në Prodhim)* Pastrimi i të Dhënave Demo: [`supabase/migrations/20261111_remove_demo_data.sql`](supabase/migrations/20261111_remove_demo_data.sql)
 
-Kjo krijon të gjitha tabelat (`properties`, `payments`, `payment_events`, `listing_renewals`, `notifications`, `site_settings`), indeksin e shpejtë të skadimit dhe politikat Row Level Security (RLS).
+Kjo krijon të gjitha tabelat (`properties`, `payments`, `payment_events`, `listing_renewals`, `notifications`, `site_settings`, `auth_verification_codes`), indeksin e shpejtë të skadimit dhe politikat Row Level Security (RLS).
 
 ---
 
 ## 4. Konfigurimi i Verifikimit të Email-it në Resend (DNS)
 
-Për të garantuar që emailet me faturat 7.00 € dhe paralajmërimet e skadimit mbërrijnë në Inbox (dhe jo në Spam):
+Për të garantuar që faturat digjitale, kodet 6-shifrore të verifikimit (2FA) dhe njoftimet e skadimit mbërrijnë në Inbox (dhe jo në Spam):
 1. Hyni në [resend.com/domains](https://resend.com/domains) dhe shtoni `pronax-ks.com`.
 2. Shtoni rekordet e kërkuara në DNS të domenit tuaj:
    * **SPF**: `TXT` me vlerë `v=spf1 include:resend.com ~all`

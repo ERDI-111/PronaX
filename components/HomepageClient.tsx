@@ -78,8 +78,8 @@ const POPULAR_LOCATIONS = [
 const HOW_IT_WORKS = [
   { step: '01', title: 'Krijo llogarinë', desc: 'Regjistrohu si shitës privat ose agjenci. Procesi zgjat 2 minuta.', icon: Users, color: 'emerald' },
   { step: '02', title: 'Hapi shpalljen', desc: 'Plotëso formularin 8-hapësh me foto, çmim, lokacion dhe detaje të pronës.', icon: Building2, color: 'blue' },
-  { step: '03', title: 'Paguaj 7 €', desc: 'Pagesë e sigurt me kartë krediti/debiti. Shpallja aktivizohet brenda minutave.', icon: CreditCard, color: 'violet' },
-  { step: '04', title: 'Gjej blerësin', desc: 'Prona shfaqet në kërkim, hartë dhe te blerësit e interesuar për 30 ditë.', icon: CheckCircle2, color: 'emerald' },
+  { step: '03', title: 'Zgjidh Planin', desc: 'Falas (3 ditë), Javor (2.99 €) ose Mujor (9.99 €). Pagesë e sigurt me kartë, pa abonime.', icon: CreditCard, color: 'violet' },
+  { step: '04', title: 'Gjej blerësin', desc: 'Prona shfaqet në kërkim, hartë dhe te blerësit e interesuar sipas kohëzgjatjes së planit.', icon: CheckCircle2, color: 'emerald' },
 ];
 
 const STATS = [
@@ -147,7 +147,7 @@ export default function HomepageClient() {
 
             <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
               Gjej banesën, shtëpinë apo investimin tënd të ardhshëm në të gjitha 38 komunat e Kosovës.
-              Publiko me tarifë fikse prej <strong className="text-white">7.00 €</strong> për 30 ditë.
+              Publiko me planet tona transparente: <strong className="text-white">Falas (3 ditë), Javor (2.99 €) ose Mujor (9.99 €)</strong>.
             </p>
 
             {/* Search Widget */}
@@ -435,7 +435,7 @@ export default function HomepageClient() {
               </h2>
               <div className="space-y-4">
                 {[
-                  { title: 'Çmim fiks dhe transparent', desc: '7 € për 30 ditë. Pa abonime. Pa komisione. Pa surpriza.', icon: Euro },
+                  { title: 'Plane transparente dhe fleksibile', desc: 'Falas (0 € / 3 ditë), Javor (2.99 € / 7 ditë), Mujor (9.99 € / 30 ditë). Pa abonime të fshehura.', icon: Euro },
                   { title: 'Mbulon të 38 komunat', desc: 'Nga Prishtina deri te Zubin Potoku — çdo pronë në çdo cep të Kosovës.', icon: MapPin },
                   { title: 'Harta interaktive', desc: 'Kërko pronën drejtpërdrejt në hartë. Shiko çmimet dhe vendoset me saktësi.', icon: Layers },
                   { title: 'Agjenci të verifikuara', desc: 'Çdo agjenci ka licencë ARBK të verifikuar manualisht nga ekipi i PronaX.', icon: ShieldCheck },
@@ -465,19 +465,19 @@ export default function HomepageClient() {
                 </div>
 
                 <div className="bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-700 rounded-2xl p-5 text-center mb-4">
-                  <div className="text-5xl font-black text-emerald-700 dark:text-emerald-400">7 €</div>
-                  <div className="text-sm font-bold text-slate-700 dark:text-slate-300 mt-1">për 30 ditë</div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">pagesë e vetme, pa rinovim automatik</div>
+                  <div className="text-3xl sm:text-4xl font-black text-emerald-700 dark:text-emerald-400">0 € — 9.99 €</div>
+                  <div className="text-sm font-bold text-slate-700 dark:text-slate-300 mt-1">3 Planet e Publikimit</div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Falas (3 ditë) • Javor (2.99 €) • Mujor (9.99 €)</div>
                 </div>
 
                 <div className="space-y-2.5 text-xs">
                   {[
                     '✓ Dukshmëri në kërkim, hartë dhe direktori',
                     '✓ Deri në 30 foto + video URL',
-                    '✓ Butoni WhatsApp direkt',
-                    '✓ Statistikat e shikimeve',
-                    '✓ Njoftimet para skadimit',
-                    '✓ Mundësi rinovimi me 7 € shtesë',
+                    '✓ Butoni WhatsApp direkt me pronarin',
+                    '✓ Statistikat e shikimeve në kohë reale',
+                    '✓ Njoftimet para skadimit të planit',
+                    '✓ Rinovim vetëm manual — pa abonime automatike',
                   ].map((f, i) => (
                     <div key={i} className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
                       <span className="text-emerald-600 font-bold">{f.split(' ')[0]}</span>

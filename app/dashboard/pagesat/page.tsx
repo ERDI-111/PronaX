@@ -62,16 +62,16 @@ export default function UserPaymentsPage() {
               Historiku i Pagesave & Faturave
             </h1>
             <p className="text-sm text-slate-600 mt-1">
-              Menaxho të gjitha faturat prej 7.00 €, dëshmitë e pagesave dhe rinovimet 30-ditore.
+              Menaxho të gjitha faturat e publikimit, dëshmitë e pagesave dhe planet aktive.
             </p>
           </div>
 
           <Link
-            href="/pagesa/prop-ks-101"
+            href="/publiko"
             className="self-start sm:self-auto px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-2 shadow-sm transition-all"
           >
             <CreditCard className="w-4 h-4" />
-            <span>Publiko Pronë të Re (7 €)</span>
+            <span>Publiko Pronë të Re</span>
           </Link>
         </div>
 
@@ -81,12 +81,15 @@ export default function UserPaymentsPage() {
             <span className="text-xs font-medium text-slate-500 block mb-1">Total i Shpenzuar</span>
             <div className="flex items-baseline gap-2">
               <span className="text-2xl font-black text-[#0B192C]">
-                {(payments.filter(p => p.status === 'successful').length * 7).toFixed(2)} €
+                {payments
+                  .filter(p => p.status === 'successful')
+                  .reduce((acc, p) => acc + (p.amount_cents || 0) / 100, 0)
+                  .toFixed(2)} €
               </span>
               <span className="text-xs text-slate-400">EUR</span>
             </div>
             <span className="text-[11px] text-emerald-600 font-medium mt-1 block">
-              Tarifë standarde 7.00 € për 30 ditë
+              Sipas planeve të zgjedhura
             </span>
           </div>
 

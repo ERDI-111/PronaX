@@ -16,15 +16,15 @@ import {
 import { EmailTemplateType } from '@/lib/email/types';
 
 const templatesList: { type: EmailTemplateType; label: string; desc: string }[] = [
-  { type: 'payment_success', label: 'Pagesë e Suksesshme (7.00 €)', desc: 'Dëshmi fature dhe konfirmim i periudhës 30-ditore' },
+  { type: 'payment_success', label: 'Pagesë e Suksesshme', desc: 'Dëshmi fature dhe konfirmim i periudhës së planit' },
   { type: 'expiring_3d', label: 'Skadon pas 3 Ditësh (Paralajmërim)', desc: 'Njoftim me link për rinovim para se të ndërpritet' },
   { type: 'expiring_1d', label: 'Skadon Nesër (Urgjente 24 orë)', desc: 'Alarm i kuq para se prona të bëhet e padukshme' },
-  { type: 'expired', label: 'Prona ka Skaduar (Rinovim 7 €)', desc: 'Njoftim heqjeje nga kërkimi me buton riaktivizimi' },
-  { type: 'renewed', label: 'Prona u Rinovua me Sukses', desc: 'Konfirmim i 30 ditëve të reja të shtuara' },
+  { type: 'expired', label: 'Prona ka Skaduar (Riaktivizim)', desc: 'Njoftim heqjeje nga kërkimi me buton riaktivizimi' },
+  { type: 'renewed', label: 'Prona u Rinovua me Sukses', desc: 'Konfirmim i ditëve të reja të shtuara' },
   { type: 'listing_published', label: 'Prona u Publikua (Aktive)', desc: 'Njoftim se prona u aprovua dhe është publike' },
   { type: 'listing_rejected', label: 'Prona u Refuzua (Moderim)', desc: 'Njoftim me arsyet e moderimit dhe udhëzimet e korrigjimit' },
   { type: 'welcome', label: 'Mirëseardhje në PronaX', desc: 'Email mirëseardhjeje pas regjistrimit të llogarisë' },
-  { type: 'email_verification', label: 'Verifikimi i Email-it', desc: 'Link me token për verifikimin e adresës' },
+  { type: 'email_verification', label: 'Kodi 6-Shifror i Verifikimit', desc: 'Kodi i sigurisë 2FA me skadim 5 minuta' },
   { type: 'password_reset', label: 'Rivendosja e Fjalëkalimit', desc: 'Udhëzime të sigurta për ndryshimin e fjalëkalimit' },
   { type: 'new_message', label: 'Mesazh i Ri nga Blerësi', desc: 'Njoftim për pyetje ose kërkesë vizite nga blerësi' },
   { type: 'saved_search_match', label: 'Pronë e Re (Kërkim i Ruajtur)', desc: 'Njoftim kur listohet një pronë sipas filtrave të ruajtur' },

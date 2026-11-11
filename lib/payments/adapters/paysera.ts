@@ -47,7 +47,7 @@ export class PayseraModernAdapter implements PaymentAdapter {
       accepturl: params.returnUrl,
       cancelurl: params.cancelUrl,
       callbackurl: params.callbackUrl,
-      amount: params.amountCents.toString(), // 700 cents = 7.00 EUR
+      amount: params.amountCents.toString(), // 299 ose 999 cent sipas planit të zgjedhur
       currency: params.currency,             // EUR
       payment: '',                           // Allow all card / direct methods
       test: this.isTestMode ? '1' : '0',
