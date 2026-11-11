@@ -3,6 +3,15 @@
 -- Database Seeding: Comprehensive Demo Data Across Kosovo
 -- Execute in Supabase SQL Editor after Phase 1, 7 & 8 migrations
 -- ==============================================================================
+--
+-- ⚠️  KUJDES — VETËM PËR ZHVILLIM / TESTIM (DEV/STAGING)
+-- -------------------------------------------------------
+-- KY SKRIPT SHTON TË DHËNA DEMO NË BAZËN E TË DHËNAVE.
+-- MOS E EKZEKUTONI NË MJEDISIN E PRODHIMIT (PRODUCTION).
+--
+-- Për të larguar të dhënat demo nga mjedisi i prodhimit,
+-- ekzekutoni migrimin: 20261111_remove_demo_data.sql
+-- ==============================================================================
 
 -- 1. Insert Demo Administrator Profile (if not exists)
 INSERT INTO public.profiles (id, email, full_name, phone, role, is_verified)
