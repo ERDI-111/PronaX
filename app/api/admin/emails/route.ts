@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
         to,
         paymentId: 'pay_test_700',
         propertyTitle: 'Banesë në Prishtinë',
-        amount: '7.00',
+        amount: '0.00',
         purpose: 'new_listing',
       });
     } else if (templateType === 'expiring_3d') {

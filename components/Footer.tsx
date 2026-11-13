@@ -32,7 +32,7 @@ export default function Footer() {
             <ul className="space-y-2.5 text-xs text-slate-400">
               <li><Link href="/" className="hover:text-emerald-400 transition-colors">Ballina</Link></li>
               <li><Link href="/dashboard/pronat" className="hover:text-emerald-400 transition-colors">Pronat e Mia</Link></li>
-              <li><Link href="/pagesa/prop-ks-101" className="hover:text-emerald-400 transition-colors">Publiko Pronë (7 €)</Link></li>
+              <li><Link href="/publiko" className="hover:text-emerald-400 transition-colors">Publiko Pronën</Link></li>
               <li><Link href="/krahaso" className="hover:text-emerald-400 transition-colors">Krahaso Pronat</Link></li>
               <li><Link href="/kalkulatori" className="hover:text-emerald-400 transition-colors">Kalkulatori i Kredisë</Link></li>
               <li><Link href="/ndihma" className="hover:text-emerald-400 transition-colors">Qendra e Ndihmës</Link></li>
@@ -46,7 +46,7 @@ export default function Footer() {
             <ul className="space-y-2.5 text-xs text-slate-400">
               <li><Link href="/kushtet-e-perdorimit" className="hover:text-emerald-400 transition-colors">Kushtet e Përdorimit</Link></li>
               <li><Link href="/politika-e-privatesise" className="hover:text-emerald-400 transition-colors">Politika e Privatësisë</Link></li>
-              <li><Link href="/politika-e-pagesave" className="hover:text-emerald-400 transition-colors">Politika e Pagesave (7 €)</Link></li>
+              <li><Link href="/politika-e-pagesave" className="hover:text-emerald-400 transition-colors">Politika e Pagesave</Link></li>
               <li><Link href="/politika-e-rimbursimit" className="hover:text-emerald-400 transition-colors">Politika e Rimbursimit</Link></li>
               <li><Link href="/rregullat-e-publikimit" className="hover:text-emerald-400 transition-colors">Rregullat e Publikimit</Link></li>
               <li><Link href="/politika-e-cookies" className="hover:text-emerald-400 transition-colors">Politika e Cookies</Link></li>

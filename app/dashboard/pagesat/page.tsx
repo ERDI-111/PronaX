@@ -111,7 +111,7 @@ export default function UserPaymentsPage() {
                 href="/pagesa/prop-ks-102?purpose=renewal"
                 className="text-xs text-emerald-600 font-bold hover:underline flex items-center gap-1"
               >
-                Rinovo me 7 € <ArrowUpRight className="w-3.5 h-3.5" />
+                Rinovo <ArrowUpRight className="w-3.5 h-3.5" />
               </Link>
             </div>
             <span className="text-[11px] text-slate-400 mt-1 block">

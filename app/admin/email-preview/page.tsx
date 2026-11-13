@@ -92,8 +92,7 @@ export default function EmailPreviewPage() {
               <span>Qendra e Njoftimeve me Email • Resend Engine</span>
             </div>
             <h1 className="text-3xl font-black text-[#0B192C] tracking-tight">
-              Shabllonet e Emaileve në Shqip (Faza 9)
-            </h1>
+              Qendra e Shabloneve të Emaileve</h1>
             <p className="text-sm text-slate-600 mt-1">
               Shiko dhe testo 12 shabllonet e plota të transaksioneve, skadimit 30-ditor dhe mirëseardhjes.
             </p>

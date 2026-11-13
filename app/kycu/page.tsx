@@ -36,7 +36,6 @@ function LoginForm() {
   // Timers
   const [cooldown, setCooldown] = useState(0); // Cooldown for resend (60s)
   const [expirySeconds, setExpirySeconds] = useState(300); // 5 minutes expiration
-  const [devHint, setDevHint] = useState<string | null>(null);
 
   // Cooldown countdown effect
   useEffect(() => {
@@ -98,9 +97,6 @@ function LoginForm() {
       setCooldown(data.cooldownSeconds || 60);
       setExpirySeconds(300); // 5 minutes
       setRemainingAttempts(5);
-      if (data.devHint) {
-        setDevHint(data.devHint);
-      }
     } catch {
       setErrorMessage('Ndodhi një gabim gjatë lidhjes. Ju lutem provoni përsëri.');
     } finally {
@@ -227,7 +223,6 @@ function LoginForm() {
       setExpirySeconds(300);
       setDigits(['', '', '', '', '', '']);
       setRemainingAttempts(5);
-      if (data.devHint) setDevHint(data.devHint);
       setSuccessMessage('Kodi i ri u dërgua me sukses në email-in tuaj.');
       setTimeout(() => digitRefs.current[0]?.focus(), 100);
     } catch {
@@ -376,24 +371,6 @@ function LoginForm() {
               <div className="mb-4 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 text-xs flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
                 <span>{successMessage}</span>
-              </div>
-            )}
-
-            {/* Dev Hint if simulated */}
-            {devHint && (
-              <div className="mb-4 p-2.5 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-[11px] flex items-center justify-between">
-                <span>Modalitet testimi (kodi):</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const parts = devHint.split('');
-                    setDigits(parts);
-                    handleVerifyCode(devHint);
-                  }}
-                  className="font-mono font-bold bg-amber-200 dark:bg-amber-800 px-2 py-0.5 rounded text-xs hover:bg-amber-300"
-                >
-                  Plotëso: {devHint}
-                </button>
               </div>
             )}
 

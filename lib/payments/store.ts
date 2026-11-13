@@ -1,173 +1,41 @@
 import { PaymentRecord, PaymentEventRecord, ListingRenewalRecord, PropertySummary } from './types';
 import { InAppNotification } from '../notifications/types';
 
-// In-memory persistent store for development & offline testing
-// Seed with initial realistic demo properties so testing can happen immediately!
-const demoProperties: Record<string, PropertySummary> = {
-  'prop-ks-101': {
-    id: 'prop-ks-101',
-    title: 'Banesë moderne me 2 dhoma në Prishtinë (Bregu i Diellit)',
-    slug: 'banese-moderne-ne-prishtine-bregu-i-diellit-101',
-    price: 95000,
-    currency: 'EUR',
-    property_type: 'Banesë',
-    listing_type: 'shitje',
-    municipality_id: 'Prishtinë',
-    settlement_id: 'Bregu i Diellit',
-    address: 'Rruga Gazmend Zajmi, Hyrja 3',
-    status: 'pending_payment',
-    renewal_count: 0,
-    owner_id: 'user-erdis-001',
-    published_at: null,
-    expires_at: null,
-  },
-  'prop-ks-102': {
-    id: 'prop-ks-102',
-    title: 'Shtëpi luksoze me oborr në Prizren',
-    slug: 'shtepi-luksoze-me-oborr-ne-prizren-102',
-    price: 185000,
-    currency: 'EUR',
-    property_type: 'Shtëpi',
-    listing_type: 'shitje',
-    municipality_id: 'Prizren',
-    settlement_id: 'Ortakoll',
-    address: 'Rruga Edit Durham',
-    status: 'expired',
-    published_at: new Date(Date.now() - 32 * 24 * 60 * 60 * 1000).toISOString(),
-    expires_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    expired_notification_sent_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    renewal_count: 0,
-    owner_id: 'user-erdis-001',
-  },
-  'prop-ks-103': {
-    id: 'prop-ks-103',
-    title: 'Lokal afarist në qendër të Pejës',
-    slug: 'lokal-afarist-ne-qender-te-pejes-103',
-    price: 750,
-    currency: 'EUR',
-    property_type: 'Lokal afarist',
-    listing_type: 'qira',
-    municipality_id: 'Pejë',
-    settlement_id: 'Qendër',
-    address: 'Sheshi Shkëlzen Haradinaj',
-    status: 'published',
-    published_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    expires_at: new Date(Date.now() + 25 * 24 * 60 * 60 * 1000).toISOString(),
-    renewal_count: 1,
-    owner_id: 'user-erdis-001',
-  },
-  'prop-ks-104': {
-    id: 'prop-ks-104',
-    title: 'Vilë moderne me pishinë në Brezovicë',
-    slug: 'vile-moderne-me-pishine-ne-brezovice-104',
-    price: 240000,
-    currency: 'EUR',
-    property_type: 'Vilë',
-    listing_type: 'shitje',
-    municipality_id: 'Shtërpcë',
-    settlement_id: 'Brezovicë',
-    address: 'Zona Turistike',
-    status: 'published',
-    published_at: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString(),
-    expires_at: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // Expiring in 2 days (Warning 3d)
-    renewal_count: 0,
-    owner_id: 'user-erdis-001',
-  },
-  'prop-ks-105': {
-    id: 'prop-ks-105',
-    title: 'Truall për ndërtim në Fushë Kosovë (Zona Industriale)',
-    slug: 'truall-per-ndertim-ne-fushe-kosove-105',
-    price: 68000,
-    currency: 'EUR',
-    property_type: 'Truall',
-    listing_type: 'shitje',
-    municipality_id: 'Fushë Kosovë',
-    settlement_id: 'Zona Industriale',
-    address: 'Magjistralja Prishtinë-Pejë',
-    status: 'published',
-    published_at: new Date(Date.now() - 29.2 * 24 * 60 * 60 * 1000).toISOString(),
-    expires_at: new Date(Date.now() + 0.8 * 24 * 60 * 60 * 1000).toISOString(), // Expiring in ~19 hours (Warning 1d)
-    renewal_count: 0,
-    owner_id: 'user-erdis-001',
-  },
-};
+// In-memory persistent store for production & active sessions
+// Empty initial state for production launch (no mock/fake data)
+const demoProperties: Record<string, PropertySummary> = {};
 
-const inMemoryPayments: Record<string, PaymentRecord> = {
-  'tx-sample-01': {
-    id: 'tx-sample-01',
-    property_id: 'prop-ks-103',
-    user_id: 'user-erdis-001',
-    amount_cents: 999,
-    currency: 'EUR',
-    purpose: 'new_listing',
-    provider: 'sandbox',
-    provider_transaction_id: 'SANDBOX-TX-9901',
-    provider_fee_cents: 15,
-    status: 'successful',
-    payment_method: 'Visa **** 4001',
-    idempotency_key: 'idemp-tx-sample-01',
-    created_at: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString(),
-    updated_at: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  'tx-sample-02': {
-    id: 'tx-sample-02',
-    property_id: 'prop-ks-103',
-    user_id: 'user-erdis-001',
-    amount_cents: 999,
-    currency: 'EUR',
-    purpose: 'renewal',
-    provider: 'sandbox',
-    provider_transaction_id: 'SANDBOX-TX-9902',
-    provider_fee_cents: 15,
-    status: 'successful',
-    payment_method: 'Mastercard **** 5101',
-    idempotency_key: 'idemp-tx-sample-02',
-    created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    updated_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-};
+const inMemoryPayments: Record<string, PaymentRecord> = {};
 
 const inMemoryEvents: PaymentEventRecord[] = [];
 
-const inMemoryRenewals: ListingRenewalRecord[] = [
-  {
-    id: 'rnw-init-01',
-    property_id: 'prop-ks-103',
-    payment_id: 'tx-sample-02',
-    previous_expires_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    new_expires_at: new Date(Date.now() + 25 * 24 * 60 * 60 * 1000).toISOString(),
-    created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-];
+const inMemoryRenewals: ListingRenewalRecord[] = [];
 
-const inMemoryNotifications: InAppNotification[] = [
-  {
-    id: 'notif-001',
-    user_id: 'user-erdis-001',
-    property_id: 'prop-ks-102',
-    type: 'property_expired',
-    title: 'Prona juaj në Prizren ka skaduar',
-    message: 'Periudha e publikimit ka përfunduar. Prona nuk shfaqet më publikisht. Mund ta riaktivizoni manualisht duke zgjedhur një plan të ri.',
-    action_url: '/pagesa/prop-ks-102?purpose=renewal',
-    is_read: false,
-    created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 'notif-002',
-    user_id: 'user-erdis-001',
-    property_id: 'prop-ks-103',
-    type: 'renewal_successful',
-    title: 'Rinovimi u realizua me sukses',
-    message: 'Prona "Lokal afarist në qendër të Pejës" u rinovua me sukses për 30 ditë të tjera sipas planit mujor.',
-    action_url: '/dashboard/pronat',
-    is_read: true,
-    created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-];
+const inMemoryNotifications: InAppNotification[] = [];
 
 export class PaymentStore {
   // Properties
   static async getProperty(id: string): Promise<PropertySummary | null> {
+    if (!demoProperties[id]) {
+      // Dynamic fallback for newly registered properties during active session
+      demoProperties[id] = {
+        id,
+        title: 'Pronë në PronaX Kosovë',
+        slug: id,
+        price: 0,
+        currency: 'EUR',
+        property_type: 'Banesë',
+        listing_type: 'shitje',
+        municipality_id: 'Prishtinë',
+        settlement_id: 'Qendër',
+        address: '',
+        status: 'pending_payment',
+        renewal_count: 0,
+        owner_id: 'user-erdis-001',
+        published_at: null,
+        expires_at: null,
+      };
+    }
     return demoProperties[id] || null;
   }
 

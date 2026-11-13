@@ -305,7 +305,12 @@ function PropertyDetailContent() {
   const [copied, setCopied] = useState(false);
   const [showContactForm, setShowContactForm] = useState(false);
   const [contactMessage, setContactMessage] = useState('');
+  const [contactSenderName, setContactSenderName] = useState('');
+  const [contactSenderEmail, setContactSenderEmail] = useState('');
+  const [contactSenderPhone, setContactSenderPhone] = useState('');
+  const [sendingMessage, setSendingMessage] = useState(false);
   const [messageSent, setMessageSent] = useState(false);
+  const [messageError, setMessageError] = useState<string | null>(null);
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReason, setReportReason] = useState('');
   const [reportSent, setReportSent] = useState(false);
@@ -362,9 +367,40 @@ function PropertyDetailContent() {
     }
   };
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMessageSent(true);
+    if (!contactMessage.trim()) return;
+    setSendingMessage(true);
+    setMessageError(null);
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: contactSenderName.trim() || 'Vizitor i Interesuar',
+          email: contactSenderEmail.trim() || 'vizitor@pronax-ks.com',
+          phone: contactSenderPhone.trim(),
+          subject: `Kërkesë për pronën: ${property?.title || propertyId}`,
+          message: contactMessage.trim(),
+          propertyId: property?.id || propertyId,
+          propertyTitle: property?.title,
+          recipientEmail: property?.owner_email || 'pronaxestate@outlook.com',
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Dështoi dërgimi i mesazhit.');
+      }
+
+      setMessageSent(true);
+      setContactMessage('');
+    } catch (err: any) {
+      setMessageError(err.message || 'Ndodhi një gabim gjatë dërgimit.');
+    } finally {
+      setSendingMessage(false);
+    }
   };
 
   const handleReport = (e: React.FormEvent) => {
@@ -936,17 +972,53 @@ function PropertyDetailContent() {
                           <p className="text-xs text-slate-400">Shitësi do t'ju kontaktojë së shpejti.</p>
                         </div>
                       ) : (
-                        <form onSubmit={handleSendMessage} className="space-y-3">
+                        <form onSubmit={handleSendMessage} className="space-y-2.5">
+                          {messageError && (
+                            <p className="text-[11px] text-rose-500 font-medium">{messageError}</p>
+                          )}
+                          <div className="grid grid-cols-2 gap-2">
+                            <input
+                              type="text"
+                              value={contactSenderName}
+                              onChange={e => setContactSenderName(e.target.value)}
+                              placeholder="Emri juaj"
+                              className="w-full px-2.5 py-1.5 border border-slate-200 dark:border-slate-600 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-slate-50 dark:bg-slate-700 dark:text-white"
+                            />
+                            <input
+                              type="email"
+                              value={contactSenderEmail}
+                              onChange={e => setContactSenderEmail(e.target.value)}
+                              placeholder="Email juaj"
+                              className="w-full px-2.5 py-1.5 border border-slate-200 dark:border-slate-600 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-slate-50 dark:bg-slate-700 dark:text-white"
+                            />
+                          </div>
+                          <input
+                            type="tel"
+                            value={contactSenderPhone}
+                            onChange={e => setContactSenderPhone(e.target.value)}
+                            placeholder="Nr. Telefoni (opsional)"
+                            className="w-full px-2.5 py-1.5 border border-slate-200 dark:border-slate-600 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-slate-50 dark:bg-slate-700 dark:text-white"
+                          />
                           <textarea
                             value={contactMessage}
                             onChange={e => setContactMessage(e.target.value)}
-                            placeholder="Jam i interesuar për këtë pronë. A mund të merremi me telefon?"
+                            placeholder="Jam i interesuar për këtë pronë..."
                             rows={3}
                             required
-                            className="w-full px-3 py-2.5 border border-slate-200 dark:border-slate-600 rounded-xl text-xs resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 dark:bg-slate-700 dark:text-white placeholder-slate-400"
+                            className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-xl text-xs resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 dark:bg-slate-700 dark:text-white placeholder-slate-400"
                           />
-                          <button type="submit" className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-colors">
-                            <Mail className="w-3.5 h-3.5" /> Dërgo Mesazhin
+                          <button 
+                            type="submit" 
+                            disabled={sendingMessage}
+                            className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                          >
+                            {sendingMessage ? (
+                              <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                              <>
+                                <Mail className="w-3.5 h-3.5" /> Dërgo Mesazhin
+                              </>
+                            )}
                           </button>
                         </form>
                       )}

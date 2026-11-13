@@ -26,8 +26,7 @@ export async function GET(req: NextRequest) {
         expirationEngine: {
           status: 'operational',
           cronSchedule: '0 0 * * * (Daily Midnight UTC)',
-          fixedFeeEur: '7.00',
-          durationDays: 30,
+          plans: ['free: 0€/3d', 'weekly: 2.99€/7d', 'monthly: 9.99€/30d'],
         },
         emailService: {
           status: 'operational',

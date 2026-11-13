@@ -74,11 +74,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Kodi 6-shifror i verifikimit u dërgua në email-in tuaj.',
+      message: 'Kodi 6-shifror i verifikimit u dërgua me sukses në email-in tuaj.',
       cooldownSeconds: 60,
-      simulated: sendResult.simulated,
-      // In dev mode when simulated, provide hint in console/header for convenient testing
-      devHint: sendResult.simulated ? code : undefined,
     });
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : 'Dështoi dërgimi i kodit të verifikimit.';

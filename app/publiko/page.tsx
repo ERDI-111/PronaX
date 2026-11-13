@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useId } from 'react';
+import React, { useState, useId, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -31,7 +31,10 @@ import {
   Layers,
   Sparkles,
   AlertCircle,
-  Check
+  Check,
+  Video,
+  FileVideo,
+  X
 } from 'lucide-react';
 import { PRONAX_PRICING_PLANS, PricingPlanId, getPlanById } from '@/lib/payments/plans';
 
@@ -84,14 +87,12 @@ export default function PropertyPublishingWizard() {
     commercial_rooms: '3',
     commercial_usage: 'Zyre / Administratë',
 
-    // Step 5: Images & Media
-    images: [
-      'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80',
-    ] as string[],
+    // Step 5: Images & Media (starts empty, user uploads real photos from device)
+    images: [] as string[],
     cover_image_index: 0,
     video_url: '',
+    video_file_name: '',
+    video_file_url: '',
 
     // Step 6: Seller Info
     seller_name: 'Erdis Berisha',
@@ -102,6 +103,9 @@ export default function PropertyPublishingWizard() {
     whatsapp_available: true,
     hide_phone_publicly: false,
   });
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
   const selectedMunicipality = getMunicipality(formData.municipality_id) || KOSOVO_MUNICIPALITIES[0];
 
@@ -119,18 +123,67 @@ export default function PropertyPublishingWizard() {
     }));
   };
 
-  const handleAddSampleImage = () => {
-    if (formData.images.length >= 30) {
+  // Open native device File Explorer / Gallery for photos
+  const handleTriggerPhotoSelect = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    if (formData.images.length + files.length > 30) {
       alert('Keni arritur numrin maksimal prej 30 fotografive.');
       return;
     }
-    const samplePool = [
-      'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1000&q=80',
-      'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1000&q=80',
-    ];
-    const nextImg = samplePool[formData.images.length % samplePool.length];
-    updateField('images', [...formData.images, nextImg]);
+
+    const newPhotoUrls: string[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      // Max 10MB per image
+      if (file.size > 10 * 1024 * 1024) {
+        alert(`Skedari "${file.name}" është më i madh se 10 MB. Ju lutem zgjidhni foto nën 10 MB.`);
+        continue;
+      }
+      if (!['image/jpeg', 'image/png', 'image/webp', 'image/jpg'].includes(file.type)) {
+        alert(`Formati i skedarit "${file.name}" nuk lejohet. Lejohen vetëm JPG, PNG, WEBP.`);
+        continue;
+      }
+      const previewUrl = URL.createObjectURL(file);
+      newPhotoUrls.push(previewUrl);
+    }
+
+    if (newPhotoUrls.length > 0) {
+      updateField('images', [...formData.images, ...newPhotoUrls]);
+    }
+
+    if (e.target) e.target.value = '';
+  };
+
+  // Open native device File Explorer / Gallery for video
+  const handleTriggerVideoSelect = () => {
+    videoInputRef.current?.click();
+  };
+
+  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 100 * 1024 * 1024) {
+      alert('Video është më e madhe se 100 MB. Ju lutem ngarkoni një video më të vogël ose përdorni lidhje të YouTube.');
+      return;
+    }
+
+    const videoPreviewUrl = URL.createObjectURL(file);
+    updateField('video_file_name', file.name);
+    updateField('video_file_url', videoPreviewUrl);
+
+    if (e.target) e.target.value = '';
+  };
+
+  const handleRemoveVideo = () => {
+    updateField('video_file_name', '');
+    updateField('video_file_url', '');
   };
 
   const handleRemoveImage = (index: number) => {
@@ -644,9 +697,30 @@ export default function PropertyPublishingWizard() {
           {/* STEP 5: Images & Media */}
           {currentStep === 5 && (
             <div className="space-y-6 text-xs">
+              {/* Hidden file inputs for Native File Explorer / Gallery */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/jpg"
+                multiple
+                onChange={handlePhotoUpload}
+                className="hidden"
+              />
+              <input
+                ref={videoInputRef}
+                type="file"
+                accept="video/mp4,video/webm,video/quicktime,video/*"
+                onChange={handleVideoUpload}
+                className="hidden"
+              />
+
               <div>
-                <span className="font-bold text-slate-800 block mb-1">Ngarkoni Fotografitë (1 deri 30 Foto)</span>
-                <p className="text-slate-500">Formatet e lejuara: JPG, PNG, WEBP. Maksimumi 10 MB për secilën foto.</p>
+                <span className="font-bold text-slate-800 text-sm block mb-1">
+                  Fotografitë e Pronës (1 deri 30 Foto)
+                </span>
+                <p className="text-slate-500">
+                  Zgjidhni foto reale nga kompjuteri ose galeria e telefonit. Formatet: JPG, PNG, WEBP (deri 10 MB për foto).
+                </p>
               </div>
 
               {/* Gallery Grid */}
@@ -654,7 +728,7 @@ export default function PropertyPublishingWizard() {
                 {formData.images.map((imgUrl, idx) => (
                   <div 
                     key={idx} 
-                    className={`relative rounded-2xl overflow-hidden border-2 aspect-video bg-slate-100 group ${
+                    className={`relative rounded-2xl overflow-hidden border-2 aspect-video bg-slate-100 group shadow-xs ${
                       formData.cover_image_index === idx ? 'border-emerald-600 ring-2 ring-emerald-500/20' : 'border-slate-200'
                     }`}
                   >
@@ -666,11 +740,11 @@ export default function PropertyPublishingWizard() {
                       </span>
                     )}
 
-                    <div className="absolute inset-0 bg-slate-900/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                       <button
                         type="button"
                         onClick={() => updateField('cover_image_index', idx)}
-                        className="p-1.5 rounded-lg bg-white/90 text-slate-800 hover:bg-white"
+                        className="p-1.5 rounded-lg bg-white/90 text-slate-800 hover:bg-white transition-colors"
                         title="Vendos si foto kryesore"
                       >
                         <Star className="w-4 h-4 text-amber-500 fill-current" />
@@ -678,7 +752,7 @@ export default function PropertyPublishingWizard() {
                       <button
                         type="button"
                         onClick={() => handleRemoveImage(idx)}
-                        className="p-1.5 rounded-lg bg-red-600 text-white hover:bg-red-700"
+                        className="p-1.5 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
                         title="Fshij foton"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -687,26 +761,93 @@ export default function PropertyPublishingWizard() {
                   </div>
                 ))}
 
-                {/* Add Photo Button */}
-                <button
-                  type="button"
-                  onClick={handleAddSampleImage}
-                  className="rounded-2xl border-2 border-dashed border-slate-300 hover:border-emerald-500 hover:bg-emerald-50/20 aspect-video flex flex-col items-center justify-center gap-1.5 text-slate-500 hover:text-emerald-700 transition-colors"
-                >
-                  <Upload className="w-5 h-5" />
-                  <span className="font-semibold text-[11px]">Shto Foto (+1)</span>
-                </button>
+                {/* Add Photo Button (Triggers Native File Explorer / Phone Gallery) */}
+                {formData.images.length < 30 && (
+                  <button
+                    type="button"
+                    onClick={handleTriggerPhotoSelect}
+                    className="rounded-2xl border-2 border-dashed border-emerald-400 bg-emerald-50/30 hover:bg-emerald-50/70 hover:border-emerald-600 aspect-video flex flex-col items-center justify-center gap-1.5 text-emerald-800 transition-all cursor-pointer group p-2 text-center"
+                  >
+                    <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Upload className="w-4 h-4 text-emerald-700" />
+                    </div>
+                    <span className="font-bold text-[11px]">Shto Foto nga Pajisja</span>
+                    <span className="text-[10px] text-slate-400">Explorer / Galeri</span>
+                  </button>
+                )}
               </div>
 
-              <div>
-                <label className="font-bold text-slate-700 block mb-1">Lidhja e Videos (YouTube / Vimeo - Opsionale)</label>
-                <input
-                  type="url"
-                  value={formData.video_url}
-                  onChange={(e) => updateField('video_url', e.target.value)}
-                  placeholder="https://www.youtube.com/watch?v=..."
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
+              {/* Photo Count Status */}
+              <div className="flex items-center justify-between text-slate-500 text-[11px] pt-1">
+                <span>Fotografi të zgjedhura: <strong>{formData.images.length} / 30</strong></span>
+                {formData.images.length === 0 && (
+                  <span className="text-amber-600 font-semibold flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    Së paku 1 foto kërkohet për publikim
+                  </span>
+                )}
+              </div>
+
+              {/* Video Section: File Upload from Device + YouTube/Vimeo Link */}
+              <div className="pt-4 border-t border-slate-200 space-y-4">
+                <div>
+                  <span className="font-bold text-slate-800 text-sm block mb-1">
+                    Video e Pronës (Opsionale)
+                  </span>
+                  <p className="text-slate-500">
+                    Mund të ngarkoni një video drejtpërdrejt nga pajisja ose të vendosni një lidhje nga YouTube/Vimeo.
+                  </p>
+                </div>
+
+                {/* Local Video Upload Option */}
+                <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <FileVideo className="w-4 h-4 text-emerald-600" />
+                      <span className="font-bold text-slate-700">Ngarko Video nga Pajisja (MP4, WEBM)</span>
+                    </div>
+                    {formData.video_file_name && (
+                      <button
+                        type="button"
+                        onClick={handleRemoveVideo}
+                        className="text-red-600 hover:text-red-700 font-bold text-[11px] flex items-center gap-1"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> Hiq videon
+                      </button>
+                    )}
+                  </div>
+
+                  {formData.video_file_url ? (
+                    <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-emerald-200">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-bold text-slate-800 truncate">{formData.video_file_name}</div>
+                        <div className="text-[10px] text-slate-400">Video u ngarkua me sukses nga pajisja</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleTriggerVideoSelect}
+                      className="w-full py-3 px-4 rounded-xl border-2 border-dashed border-slate-300 hover:border-emerald-500 hover:bg-emerald-50/30 text-slate-600 hover:text-emerald-700 font-bold transition-all flex items-center justify-center gap-2"
+                    >
+                      <Video className="w-4 h-4 text-emerald-600" />
+                      <span>Zgjidh Video nga Skedarët / Galeria</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* YouTube / Vimeo Link Option */}
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Ose Vendosni Link të Videos (YouTube / Vimeo)</label>
+                  <input
+                    type="url"
+                    value={formData.video_url}
+                    onChange={(e) => updateField('video_url', e.target.value)}
+                    placeholder="https://www.youtube.com/watch?v=... ose https://vimeo.com/..."
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                  />
+                </div>
               </div>
             </div>
           )}
@@ -815,11 +956,18 @@ export default function PropertyPublishingWizard() {
               {/* Mock Property Card */}
               <div className="rounded-3xl border border-slate-200 overflow-hidden shadow-sm bg-white">
                 <div className="relative aspect-video bg-slate-900">
-                  <img 
-                    src={formData.images[formData.cover_image_index] || formData.images[0]} 
-                    alt="Cover" 
-                    className="w-full h-full object-cover"
-                  />
+                  {formData.images.length > 0 ? (
+                    <img 
+                      src={formData.images[formData.cover_image_index] || formData.images[0]} 
+                      alt="Foto Ballore" 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 gap-2">
+                      <Camera className="w-8 h-8 text-slate-500" />
+                      <span className="text-xs">Ende pa fotografi të zgjedhur</span>
+                    </div>
+                  )}
                   <span className="absolute top-3 left-3 bg-emerald-600 text-white font-bold text-xs px-3 py-1 rounded-lg">
                     {formData.listing_type === 'shitje' ? 'Në Shitje' : 'Me Qira'}
                   </span>

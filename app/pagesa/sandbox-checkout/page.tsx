@@ -15,7 +15,8 @@ function SandboxCheckoutContent() {
     ? parseInt(rawAmount, 10) 
     : (parseFloat(rawAmount) === 2.99 ? 299 : 999);
   const displayEur = (amountCents / 100).toFixed(2);
-  const planDuration = amountCents === 299 ? '7 ditë' : '30 ditë';
+  const planDuration = amountCents === 0 ? '3 ditë' : amountCents === 299 ? '7 ditë' : '30 ditë';
+  const planName = amountCents === 0 ? 'Falas' : amountCents === 299 ? 'Javor' : 'Mujor';
   const currency = searchParams.get('currency') || 'EUR';
   const purpose = searchParams.get('purpose') || 'new_listing';
 

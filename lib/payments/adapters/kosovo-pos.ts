@@ -49,7 +49,7 @@ export class KosovoBankPosAdapter implements PaymentAdapter {
       throw new Error(`Konfigurimi i ${this.name.toUpperCase()} mungon: Ju lutem vendosni Client ID dhe Store Key në .env.`);
     }
 
-    const amountStr = (params.amountCents / 100).toFixed(2); // "7.00"
+    const amountStr = (params.amountCents / 100).toFixed(2); // e.g. "2.99" or "9.99"
     const rnd = crypto.randomBytes(16).toString('hex');
     const tranType = 'Auth';
 

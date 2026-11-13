@@ -146,7 +146,7 @@ function HeaderContent() {
               className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3.5 py-2.5 rounded-xl shadow-md shadow-emerald-900/30 transition-all text-xs whitespace-nowrap"
             >
               <PlusCircle className="w-4 h-4" />
-              <span className="hidden sm:inline">Publiko (7 €)</span>
+              <span className="hidden sm:inline">Publiko Pronën</span>
               <span className="sm:hidden">+</span>
             </Link>
 
@@ -264,7 +264,7 @@ function HeaderContent() {
                 className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all text-sm"
               >
                 <PlusCircle className="w-5 h-5" />
-                <span>Publiko Pronën Tënde — 7 €</span>
+                <span>Publiko Pronën Tënde</span>
               </Link>
             </div>
           </div>

@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { MessageSquare, Send, User, Building2, Clock, CheckCheck } from 'lucide-react';
+import Link from 'next/link';
+import { MessageSquare, Send, User, Building2, Clock, CheckCheck, Mail, ArrowRight } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -15,51 +16,63 @@ interface Message {
 interface Conversation {
   id: string;
   userName: string;
+  userEmail?: string;
+  userPhone?: string;
   propertyTitle: string;
-  propertyPrice: string;
+  propertyPrice?: string;
   lastMessage: string;
   unread: boolean;
   messages: Message[];
 }
 
 export default function MessagesPage() {
-  const [conversations, setConversations] = useState<Conversation[]>([
-    {
-      id: 'conv-1',
-      userName: 'Flamur Krasniqi',
-      propertyTitle: 'Lokal afarist modern në qendër të Pejës',
-      propertyPrice: '750 €/muaj',
-      lastMessage: 'A mund ta vizitoj lokalin nesër rreth orës 14:00?',
-      unread: true,
-      messages: [
-        { id: 'm1', sender: 'buyer', text: 'Përshëndetje! Jam i interesuar për lokalin tuaj afarist.', timestamp: '10:15' },
-        { id: 'm2', sender: 'seller', text: 'Përshëndetje Flamur! Po, lokali është i lirë për shfrytëzim.', timestamp: '10:20' },
-        { id: 'm3', sender: 'buyer', text: 'A mund ta vizitoj lokalin nesër rreth orës 14:00?', timestamp: '10:32' },
-      ],
-    },
-    {
-      id: 'conv-2',
-      userName: 'Arben Gashi',
-      propertyTitle: 'Vilë luksoze me pamje malore në Brezovicë',
-      propertyPrice: '240,000 €',
-      lastMessage: 'Faleminderit për informacionin mbi lejen e ndërtimit.',
-      unread: false,
-      messages: [
-        { id: 'm4', sender: 'buyer', text: 'Përshëndetje, a ka vila fletë poseduese të rregullt?', timestamp: 'Dje' },
-        { id: 'm5', sender: 'seller', text: 'Po, çdo dokumentacion kadastral është 1/1 në emër timin.', timestamp: 'Dje' },
-        { id: 'm6', sender: 'buyer', text: 'Faleminderit për informacionin mbi lejen e ndërtimit.', timestamp: 'Dje' },
-      ],
-    },
-  ]);
-
-  const [activeConvId, setActiveConvId] = useState<string>('conv-1');
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeConvId, setActiveConvId] = useState<string>('');
   const [inputText, setInputText] = useState('');
+
+  useEffect(() => {
+    fetch('/api/messages')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data?.messages && Array.isArray(data.messages)) {
+          const convs: Conversation[] = data.messages.map((m: any) => ({
+            id: m.id,
+            userName: m.name,
+            userEmail: m.email,
+            userPhone: m.phone,
+            propertyTitle: m.property_title || m.subject || 'Pyetje e përgjithshme',
+            lastMessage: m.message,
+            unread: !m.is_read,
+            messages: [
+              {
+                id: `m-${m.id}`,
+                sender: 'buyer',
+                text: m.message,
+                timestamp: new Date(m.created_at).toLocaleTimeString('sq-AL', { hour: '2-digit', minute: '2-digit' }),
+              },
+            ],
+          }));
+          setConversations(convs);
+          if (convs.length > 0) {
+            setActiveConvId(convs[0].id);
+          }
+        }
+      })
+      .catch(() => {
+        // Empty state on error
+        setConversations([]);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
 
   const activeConv = conversations.find(c => c.id === activeConvId) || conversations[0];
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputText.trim()) return;
+    if (!inputText.trim() || !activeConv) return;
 
     const newMsg: Message = {
       id: `m-${Date.now()}`,
@@ -101,94 +114,149 @@ export default function MessagesPage() {
           </p>
         </div>
 
-        {/* Messaging Box */}
-        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden grid grid-cols-1 md:grid-cols-12 min-h-[540px]">
-          {/* Left: Conversations list */}
-          <div className="md:col-span-5 border-r border-slate-100 flex flex-col">
-            <div className="p-4 bg-slate-50 border-b border-slate-100 font-bold text-xs text-slate-700">
-              Bisedat Aktive ({conversations.length})
+        {loading ? (
+          <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-16 flex flex-col items-center justify-center">
+            <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-3" />
+            <span className="text-xs text-slate-500">Duke ngarkuar mesazhet...</span>
+          </div>
+        ) : conversations.length === 0 ? (
+          /* Clean Empty State (Production Ready) */
+          <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-16 flex flex-col items-center justify-center text-center">
+            <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+              <MessageSquare className="w-8 h-8 text-slate-400" />
             </div>
-
-            <div className="divide-y divide-slate-100 flex-1 overflow-y-auto">
-              {conversations.map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => setActiveConvId(c.id)}
-                  className={`w-full text-left p-4 hover:bg-slate-50 transition-colors flex items-start gap-3 ${
-                    activeConvId === c.id ? 'bg-emerald-50/40 border-l-4 border-emerald-600' : ''
-                  }`}
-                >
-                  <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs flex-shrink-0">
-                    {c.userName.slice(0, 2).toUpperCase()}
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-xs text-slate-900 truncate">{c.userName}</span>
-                      {c.unread && (
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
-                      )}
-                    </div>
-                    <span className="text-[11px] font-semibold text-emerald-700 block truncate">{c.propertyTitle}</span>
-                    <span className="text-[11px] text-slate-500 block truncate mt-0.5">{c.lastMessage}</span>
-                  </div>
-                </button>
-              ))}
+            <h3 className="text-lg font-black text-[#0B192C] mb-2">Ende nuk keni mesazhe të reja</h3>
+            <p className="text-xs text-slate-500 max-w-md mb-6 leading-relaxed">
+              Kur blerësit ose qiramarrësit e interesuar ju shkruajnë përmes formularit të kontaktit të pronave tuaja, bisedat e tyre do të shfaqen këtu menjëherë.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <Link
+                href="/dashboard/pronat"
+                className="px-5 py-2.5 rounded-xl font-bold text-xs text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
+              >
+                Menaxho Pronat e Mia
+              </Link>
+              <Link
+                href="/publiko"
+                className="px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-emerald-600 hover:bg-emerald-500 transition-colors flex items-center gap-1.5 shadow-sm"
+              >
+                <span>Publiko Pronë të Re</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
           </div>
+        ) : (
+          /* Active Messaging Box */
+          <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden grid grid-cols-1 md:grid-cols-12 min-h-[540px]">
+            {/* Left: Conversations list */}
+            <div className="md:col-span-5 border-r border-slate-100 flex flex-col">
+              <div className="p-4 bg-slate-50 border-b border-slate-100 font-bold text-xs text-slate-700 flex justify-between items-center">
+                <span>Bisedat Aktive ({conversations.length})</span>
+              </div>
 
-          {/* Right: Message history & composer */}
-          <div className="md:col-span-7 flex flex-col justify-between">
-            {/* Conversation header */}
-            <div className="p-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-              <div>
-                <span className="font-bold text-xs text-slate-900 block">{activeConv.userName}</span>
-                <span className="text-[11px] text-slate-500">{activeConv.propertyTitle} • {activeConv.propertyPrice}</span>
+              <div className="divide-y divide-slate-100 flex-1 overflow-y-auto">
+                {conversations.map((c) => (
+                  <button
+                    key={c.id}
+                    onClick={() => setActiveConvId(c.id)}
+                    className={`w-full text-left p-4 hover:bg-slate-50 transition-colors flex items-start gap-3 ${
+                      activeConvId === c.id ? 'bg-emerald-50/40 border-l-4 border-emerald-600' : ''
+                    }`}
+                  >
+                    <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0">
+                      {c.userName.slice(0, 2).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-baseline mb-0.5">
+                        <span className="font-bold text-xs text-slate-900 truncate">{c.userName}</span>
+                        {c.unread && (
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                        )}
+                      </div>
+                      <div className="text-[11px] font-semibold text-emerald-700 truncate mb-1">
+                        {c.propertyTitle}
+                      </div>
+                      <p className="text-xs text-slate-500 truncate">{c.lastMessage}</p>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
 
-            {/* Messages body */}
-            <div className="p-6 space-y-4 flex-1 overflow-y-auto">
-              {activeConv.messages.map((m) => (
-                <div
-                  key={m.id}
-                  className={`flex flex-col ${m.sender === 'seller' ? 'items-end' : 'items-start'}`}
-                >
-                  <div
-                    className={`max-w-md p-3.5 rounded-2xl text-xs leading-relaxed ${
-                      m.sender === 'seller'
-                        ? 'bg-emerald-600 text-white rounded-br-none'
-                        : 'bg-slate-100 text-slate-900 rounded-bl-none'
-                    }`}
-                  >
-                    {m.text}
-                  </div>
-                  <span className="text-[10px] text-slate-400 mt-1 px-1">
-                    {m.timestamp}
-                  </span>
-                </div>
-              ))}
-            </div>
+            {/* Right: Active Chat View */}
+            <div className="md:col-span-7 flex flex-col">
+              {activeConv ? (
+                <>
+                  {/* Chat header */}
+                  <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-white">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 font-bold text-xs flex items-center justify-center">
+                        {activeConv.userName.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div>
+                        <div className="font-bold text-xs text-slate-900">{activeConv.userName}</div>
+                        <div className="text-[11px] text-slate-500 flex items-center gap-2">
+                          {activeConv.userEmail && <span>{activeConv.userEmail}</span>}
+                          {activeConv.userPhone && <span>• {activeConv.userPhone}</span>}
+                        </div>
+                      </div>
+                    </div>
 
-            {/* Input Composer */}
-            <form onSubmit={handleSend} className="p-4 border-t border-slate-100 flex items-center gap-2">
-              <input
-                type="text"
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                placeholder="Shkruani përgjigjen tuaj këtu..."
-                className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-              <button
-                type="submit"
-                className="p-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-colors"
-                title="Dërgo"
-              >
-                <Send className="w-4 h-4" />
-              </button>
-            </form>
+                    <div className="text-right">
+                      <div className="text-[11px] font-bold text-emerald-600">{activeConv.propertyTitle}</div>
+                    </div>
+                  </div>
+
+                  {/* Messages scroll */}
+                  <div className="flex-1 p-5 overflow-y-auto space-y-3 bg-slate-50/50">
+                    {activeConv.messages.map((m) => (
+                      <div
+                        key={m.id}
+                        className={`flex flex-col ${m.sender === 'seller' ? 'items-end' : 'items-start'}`}
+                      >
+                        <div
+                          className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-xs ${
+                            m.sender === 'seller'
+                              ? 'bg-emerald-600 text-white rounded-br-xs'
+                              : 'bg-white border border-slate-200 text-slate-800 rounded-bl-xs shadow-xs'
+                          }`}
+                        >
+                          {m.text}
+                        </div>
+                        <span className="text-[10px] text-slate-400 mt-1 px-1">
+                          {m.timestamp}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Chat input */}
+                  <form onSubmit={handleSend} className="p-3 border-t border-slate-100 bg-white flex gap-2">
+                    <input
+                      type="text"
+                      value={inputText}
+                      onChange={(e) => setInputText(e.target.value)}
+                      placeholder="Shkruaj përgjigjen tuaj..."
+                      className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!inputText.trim()}
+                      className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs transition-colors flex items-center gap-1.5"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                      <span>Dërgo</span>
+                    </button>
+                  </form>
+                </>
+              ) : (
+                <div className="flex-1 flex items-center justify-center p-8 text-center text-slate-400 text-xs">
+                  Zgjidhni një bisedë nga kolona majtas
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </main>
 
       <Footer />

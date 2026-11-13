@@ -67,12 +67,42 @@ const FEATURED_PROPERTIES = [
 ];
 
 const POPULAR_LOCATIONS = [
-  { name: 'Prishtinë', count: 342, image: 'https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&w=400&q=80' },
-  { name: 'Prizren', count: 198, image: 'https://images.unsplash.com/photo-1467226632440-65f0b4957563?auto=format&fit=crop&w=400&q=80' },
-  { name: 'Pejë', count: 124, image: 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&w=400&q=80' },
-  { name: 'Ferizaj', count: 87, image: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=400&q=80' },
-  { name: 'Gjilan', count: 72, image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80' },
-  { name: 'Mitrovicë', count: 56, image: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=400&q=80' },
+  { 
+    name: 'Prishtinë', 
+    count: 342, 
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Pristina%2C_Kosovo.jpg/640px-Pristina%2C_Kosovo.jpg',
+    fallback: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=400&q=80'
+  },
+  { 
+    name: 'Prizren', 
+    count: 198, 
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Panorama_of_Prizren%2C_2021.jpg/640px-Panorama_of_Prizren%2C_2021.jpg',
+    fallback: 'https://images.unsplash.com/photo-1467226632440-65f0b4957563?auto=format&fit=crop&w=400&q=80'
+  },
+  { 
+    name: 'Pejë', 
+    count: 124, 
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Peja_aerial.jpg/640px-Peja_aerial.jpg',
+    fallback: 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&w=400&q=80'
+  },
+  { 
+    name: 'Ferizaj', 
+    count: 87, 
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Ferizaj_city.jpg/640px-Ferizaj_city.jpg',
+    fallback: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=400&q=80'
+  },
+  { 
+    name: 'Gjilan', 
+    count: 72, 
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Gjilan.jpg/640px-Gjilan.jpg',
+    fallback: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'
+  },
+  { 
+    name: 'Mitrovicë', 
+    count: 56, 
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Mitrovica_city_view.jpg/640px-Mitrovica_city_view.jpg',
+    fallback: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=400&q=80'
+  },
 ];
 
 const HOW_IT_WORKS = [
@@ -104,6 +134,21 @@ export default function HomepageClient() {
   const [searchMunicipality, setSearchMunicipality] = useState('');
   const [searchCategory, setSearchCategory] = useState('');
   const [searchPriceMax, setSearchPriceMax] = useState('');
+  const [featuredProperties, setFeaturedProperties] = useState<typeof FEATURED_PROPERTIES>([]);
+  const [featuredLoading, setFeaturedLoading] = useState(true);
+
+  // Load real featured properties from API
+  useEffect(() => {
+    fetch('/api/properties/featured')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.properties?.length) {
+          setFeaturedProperties(data.properties);
+        }
+      })
+      .catch(() => {/* silent - show empty state */})
+      .finally(() => setFeaturedLoading(false));
+  }, []);
 
   const buildSearchUrl = () => {
     const params = new URLSearchParams();
@@ -278,8 +323,36 @@ export default function HomepageClient() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {FEATURED_PROPERTIES.map(property => (
-              <Link
+            {featuredLoading ? (
+              // Loading skeleton
+              Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 overflow-hidden shadow-xs animate-pulse">
+                  <div className="aspect-[4/3] bg-slate-200 dark:bg-slate-700" />
+                  <div className="p-4 space-y-2">
+                    <div className="h-5 bg-slate-200 dark:bg-slate-700 rounded w-1/2" />
+                    <div className="h-4 bg-slate-100 dark:bg-slate-600 rounded w-3/4" />
+                    <div className="h-3 bg-slate-100 dark:bg-slate-600 rounded w-2/3" />
+                  </div>
+                </div>
+              ))
+            ) : featuredProperties.length === 0 ? (
+              // Empty state - no demo data shown
+              <div className="col-span-full flex flex-col items-center justify-center py-16 text-center">
+                <Building2 className="w-12 h-12 text-slate-300 mb-4" />
+                <h3 className="text-lg font-bold text-slate-500 dark:text-slate-400 mb-2">Prona e para po vijnë</h3>
+                <p className="text-sm text-slate-400 dark:text-slate-500 mb-6 max-w-md">
+                  Jini të parët! Publikoni pronën tuaj dhe shfaqeni te blerësit dhe qiramarrësit në Kosovë.
+                </p>
+                <Link
+                  href="/publiko"
+                  className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-2.5 rounded-xl transition-all text-sm"
+                >
+                  <span>Publiko Pronën Tënde</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            ) : (
+            featuredProperties.map(property => (              <Link
                 key={property.id}
                 href={`/prona/${property.id}`}
                 className="group bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 overflow-hidden shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col"
@@ -329,7 +402,8 @@ export default function HomepageClient() {
                   </div>
                 </div>
               </Link>
-            ))}
+            ))
+            )}
           </div>
 
           <div className="text-center mt-8">
@@ -366,8 +440,14 @@ export default function HomepageClient() {
               >
                 <img
                   src={loc.image}
-                  alt={loc.name}
+                  alt={`Qyteti i ${loc.name}, Kosovë`}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  onError={(e) => {
+                    const target = e.currentTarget as HTMLImageElement;
+                    if (loc.fallback && target.src !== loc.fallback) {
+                      target.src = loc.fallback;
+                    }
+                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-3">

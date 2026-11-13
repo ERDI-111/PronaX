@@ -258,7 +258,7 @@ export default function AdminExpirationsPage() {
                             href={`/pagesa/${p.id}?purpose=renewal`}
                             className="text-emerald-600 hover:text-emerald-700 font-bold text-xs inline-flex items-center gap-1"
                           >
-                            <span>Simulo Rinovim (7 €)</span>
+                            <span>Simulo Rinovim</span>
                             <ArrowRight className="w-3.5 h-3.5" />
                           </a>
                         ) : (

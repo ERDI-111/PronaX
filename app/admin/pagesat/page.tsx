@@ -144,7 +144,7 @@ export default function AdminPaymentsPage() {
               <span className="text-xs text-slate-400">EUR</span>
             </div>
             <span className="text-[11px] text-slate-500 mt-1 block">
-              Totali i faturave €7.00 të suksesshme
+              Totali i faturave të suksesshme
             </span>
           </div>
 

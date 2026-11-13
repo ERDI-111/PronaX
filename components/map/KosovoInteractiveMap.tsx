@@ -80,7 +80,7 @@ export default function KosovoInteractiveMap({
   const userLocationMarkerRef = useRef<L.Marker | null>(null);
 
   const [currentZoom, setCurrentZoom] = useState(DEFAULT_ZOOM);
-  const [mapStyle, setMapStyle] = useState<'standard' | 'voyager'>('voyager');
+  const [mapStyle, setMapStyle] = useState<'standard' | 'voyager'>('standard');
   const [gpsLoading, setGpsLoading] = useState(false);
   const [gpsError, setGpsError] = useState<string | null>(null);
 
@@ -98,12 +98,11 @@ export default function KosovoInteractiveMap({
       zoomControl: false, // Custom controls used instead
     });
 
-    // Tile layer - CartoDB Voyager by default (clear labels, clean street and city map of Kosovo)
-    const tileLayer = L.tileLayer(
-      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    // Primary Geographic Tile Layer - OpenStreetMap (Kosovo cities, relief, roads)
+    L.tileLayer(
+      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
       {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        subdomains: 'abcd',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         maxZoom: 19,
       }
     ).addTo(map);
@@ -112,12 +111,26 @@ export default function KosovoInteractiveMap({
     markersLayerRef.current = markersGroup;
     mapInstanceRef.current = map;
 
+    // Invalidate size multiple times to ensure map tiles render properly across all screens
+    const t1 = setTimeout(() => { map.invalidateSize(); }, 100);
+    const t2 = setTimeout(() => { map.invalidateSize(); }, 300);
+    const t3 = setTimeout(() => { map.invalidateSize(); }, 600);
+
+    const handleResize = () => {
+      map.invalidateSize();
+    };
+    window.addEventListener('resize', handleResize);
+
     // Track zoom level for clustering calculation
     map.on('zoomend', () => {
       setCurrentZoom(map.getZoom());
     });
 
     return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      window.removeEventListener('resize', handleResize);
       map.remove();
       mapInstanceRef.current = null;
     };

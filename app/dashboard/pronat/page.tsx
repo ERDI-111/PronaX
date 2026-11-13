@@ -154,7 +154,7 @@ export default function MyPropertiesPage() {
             </div>
             <span className="text-3xl font-black text-red-600">{counts.expired}</span>
             <span className="text-[11px] text-slate-500 mt-1 block">
-              Kërkojnë rinovim manual (7 €)
+              Kërkojnë rinovim manual
             </span>
           </div>
 
@@ -308,7 +308,7 @@ export default function MyPropertiesPage() {
                             className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl font-bold text-xs text-white bg-emerald-600 hover:bg-emerald-500 active:scale-95 shadow-md shadow-emerald-700/20 transition-all flex items-center justify-center gap-1.5"
                           >
                             <RefreshCw className="w-3.5 h-3.5" />
-                            <span>Rinovo pronën – 7 €</span>
+                            <span>Rinovo Pronën</span>
                           </Link>
                         )}
 
@@ -365,7 +365,7 @@ export default function MyPropertiesPage() {
                         href={`/pagesa/${prop.id}?purpose=renewal`}
                         className="font-bold underline text-amber-950 whitespace-nowrap ml-2"
                       >
-                        Rinovo (7 €) →
+                        Rinovo →
                       </Link>
                     </div>
                   )}

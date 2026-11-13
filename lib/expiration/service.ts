@@ -206,7 +206,7 @@ export class ExpirationService {
         renewalId: r.id,
         propertyId: r.property_id,
         paymentId: r.payment_id,
-        amount: payment ? (payment.amount_cents / 100).toFixed(2) : '7.00',
+        amount: payment ? (payment.amount_cents / 100).toFixed(2) : '0.00',
         currency: payment?.currency || 'EUR',
         paymentMethod: payment?.payment_method || 'Kartelë bankare',
         previousExpiresAt: r.previous_expires_at,
