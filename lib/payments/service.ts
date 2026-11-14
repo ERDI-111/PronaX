@@ -75,7 +75,7 @@ export class PaymentService {
     if (plan.priceCents === 0) {
       const now = new Date();
       const expirationDate = new Date(now.getTime() + plan.durationDays * 24 * 60 * 60 * 1000);
-      const requireModeration = process.env.REQUIRE_ADMIN_MODERATION !== 'false';
+      const requireModeration = process.env.REQUIRE_ADMIN_MODERATION === 'strict';
       const nextStatus = requireModeration ? 'pending_moderation' : 'published';
 
       const freePaymentRecord: PaymentRecord = {
@@ -287,7 +287,7 @@ export class PaymentService {
       }
 
       // Check moderation setting (Default: true for platform safety)
-      const requireModeration = process.env.REQUIRE_ADMIN_MODERATION !== 'false';
+      const requireModeration = process.env.REQUIRE_ADMIN_MODERATION === 'strict';
       const now = new Date();
 
       // Determine duration days from selected plan (Free: 3 days, Weekly: 7 days, Monthly: 30 days)

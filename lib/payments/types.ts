@@ -57,6 +57,7 @@ export interface PropertySummary {
   id: string;
   title: string;
   slug?: string;
+  description?: string;
   price: number;
   currency: string;
   property_type: string;
@@ -64,7 +65,25 @@ export interface PropertySummary {
   municipality_id: string;
   settlement_id?: string;
   address?: string;
+  area_m2?: number;
+  bedrooms?: number | null;
+  bathrooms?: number | null;
+  living_rooms?: number | null;
+  floor?: string | null;
+  total_floors?: string | null;
+  year_built?: string | null;
+  furnished?: string | null;
+  heating_type?: string | null;
+  has_balcony?: boolean;
+  has_parking?: boolean;
+  has_elevator?: boolean;
+  has_ac?: boolean;
+  cover_image?: string;
+  images?: string[];
+  video_url?: string;
+  video_file_url?: string;
   status: 'draft' | 'pending_payment' | 'pending_moderation' | 'published' | 'expired' | 'rejected' | 'archived';
+  plan_id?: 'free' | 'weekly' | 'monthly';
   published_at?: string | null;
   expires_at?: string | null;
   expiration_warning_3d_sent_at?: string | null;
@@ -72,6 +91,14 @@ export interface PropertySummary {
   expired_notification_sent_at?: string | null;
   renewal_count: number;
   owner_id: string;
+  owner_name?: string;
+  owner_phone?: string;
+  owner_email?: string;
+  owner_type?: 'privat' | 'agjenci';
+  views?: number;
+  lat?: number | null;
+  lng?: number | null;
+  created_at?: string;
 }
 
 export interface CreatePaymentSessionParams {

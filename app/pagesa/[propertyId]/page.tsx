@@ -12,14 +12,7 @@ import {
 } from 'lucide-react';
 import { PRONAX_PRICING_PLANS, PricingPlanId, getPlanById } from '@/lib/payments/plans';
 
-const MOCK_PROPERTIES: Record<string, any> = {
-  'prop-ks-101': { title: 'Banesë moderne në lagjen Marigona Hill', property_type: 'Banesë', municipality_name: 'Prishtinë', price: 135000, listing_type: 'shitje' },
-  'prop-ks-102': { title: 'Shtëpi komode me oborr të rregulluar', property_type: 'Shtëpi', municipality_name: 'Prizren', price: 185000, listing_type: 'shitje' },
-  'prop-ks-103': { title: 'Lokal afarist modern në qendër të Pejës', property_type: 'Lokal afarist', municipality_name: 'Pejë', price: 750, listing_type: 'qira' },
-  'prop-ks-104': { title: 'Vilë luksoze me pamje malore në Brezovicë', property_type: 'Vilë', municipality_name: 'Shtërpcë', price: 240000, listing_type: 'shitje' },
-  'prop-ks-105': { title: 'Truall ndërtimor 1500m² me leje ndërtimi', property_type: 'Truall', municipality_name: 'Fushë Kosovë', price: 68000, listing_type: 'shitje' },
-  'prop-ks-106': { title: 'Banesë 2+1 me ballkon të madh — Ferizaj Qendër', property_type: 'Banesë', municipality_name: 'Ferizaj', price: 72000, listing_type: 'shitje' },
-};
+const MOCK_PROPERTIES: Record<string, any> = {};
 
 function PaymentPageContent() {
   const params = useParams();

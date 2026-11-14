@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-// Individual property fetch — Supabase-first with 404 fallback
-// Kur Supabase nuk është i konfiguruar, kthen 404 (jo të dhëna demo si reale).
+import { PaymentStore } from '@/lib/payments/store';
 
 export async function GET(
   req: NextRequest,
@@ -9,7 +7,7 @@ export async function GET(
 ) {
   const { id } = await params;
 
-  // Try Supabase first
+  // 1. Try Supabase first
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -24,27 +22,28 @@ export async function GET(
         .single();
 
       if (!error && data) {
-        // Increment view counter (non-blocking)
         supabase.rpc('increment_property_views', { prop_id: id }).then(() => {});
         return NextResponse.json({ property: data, source: 'supabase' });
-      }
-
-      if (error?.code === 'PGRST116') {
-        // Not found in DB
-        return NextResponse.json(
-          { error: 'Prona nuk u gjet.' },
-          { status: 404 }
-        );
       }
     } catch {}
   }
 
-  // Supabase nuk është i konfiguruar — kthen 404 me mesazh të qartë
+  // 2. Query persistent store
+  const prop = await PaymentStore.getProperty(id);
+  if (prop) {
+    const updatedViews = (prop.views || 0) + 1;
+    PaymentStore.updateProperty(id, { views: updatedViews }).catch(() => {});
+    return NextResponse.json({
+      property: {
+        ...prop,
+        views: updatedViews,
+      },
+      source: 'store',
+    });
+  }
+
   return NextResponse.json(
-    {
-      error: 'Prona nuk u gjet.',
-      info: 'Baza e të dhënave nuk është e konfiguruar. Lidhu me Supabase për të aksesuar prona reale.',
-    },
+    { error: 'Prona nuk u gjet.' },
     { status: 404 }
   );
 }

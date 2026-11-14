@@ -248,31 +248,42 @@ export default function PropertyPublishingWizard() {
     setError(null);
 
     try {
-      const generatedPropertyId = `prop-ks-${Date.now().toString().slice(-5)}`;
+      // Validate mandatory fields
+      if (!formData.title?.trim()) {
+        setCurrentStep(3);
+        throw new Error('Ju lutem vendosni titullin e pronës në Hapin 3.');
+      }
+      if (!formData.price || Number(formData.price) <= 0) {
+        setCurrentStep(3);
+        throw new Error('Ju lutem vendosni një çmim të vlefshëm në Hapin 3.');
+      }
+      if (!formData.municipality_id) {
+        setCurrentStep(3);
+        throw new Error('Ju lutem zgjidhni komunën në Hapin 3.');
+      }
 
-      // If user selected Free plan (0 € - 3 days), activate directly via API
-      if (selectedPlanId === 'free') {
-        const res = await fetch('/api/payments/checkout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            propertyId: generatedPropertyId,
-            planId: 'free',
-            purpose: 'new_listing',
-            userEmail: formData.seller_email,
-            userName: formData.seller_name,
-          }),
-        });
-        const data = await res.json();
-        if (!res.ok || !data.success) {
-          throw new Error(data.error || 'Dështoi aktivizimi i planit falas.');
-        }
-        router.push(`/pagesa/sukses?paymentId=${data.paymentId}&propertyId=${generatedPropertyId}&plan=free`);
+      // Submit complete property data to backend
+      const res = await fetch('/api/properties', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          planId: selectedPlanId,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Dështoi ruajtja e pronës.');
+      }
+
+      // If redirect URL provided (success page for Free or payment page for Weekly/Monthly)
+      if (data.redirectUrl) {
+        router.push(data.redirectUrl);
         return;
       }
 
-      // If user selected paid plan (Weekly 2.99 € or Monthly 9.99 €)
-      router.push(`/pagesa/${generatedPropertyId}?purpose=new_listing&plan=${selectedPlanId}`);
+      router.push(`/prona/${data.propertyId}`);
     } catch (err: any) {
       setError(err.message || 'Dështoi ruajtja e pronës.');
       setSubmitting(false);

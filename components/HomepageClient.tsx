@@ -12,97 +12,58 @@ import { KOSOVO_MUNICIPALITIES } from '@/lib/locations/kosovo-data';
 import { useTheme } from '@/lib/theme/ThemeProvider';
 import { AISmartSearchBar } from '@/components/ai';
 
-const FEATURED_PROPERTIES = [
-  {
-    id: 'prop-ks-104',
-    title: 'Vilë luksoze me pamje malore',
-    price: 240000,
-    type: 'shitje',
-    category: 'Vilë',
-    municipality: 'Shtërpcë',
-    settlement: 'Brezovicë',
-    area_m2: 260,
-    rooms: 6,
-    badge: '⭐ Premium',
-    image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    id: 'prop-ks-101',
-    title: 'Banesë moderne — Marigona Hill',
-    price: 135000,
-    type: 'shitje',
-    category: 'Banesë',
-    municipality: 'Prishtinë',
-    settlement: 'Veternik',
-    area_m2: 96,
-    rooms: 3,
-    badge: '🔥 Të preferuara',
-    image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    id: 'prop-ks-102',
-    title: 'Shtëpi private me oborr',
-    price: 185000,
-    type: 'shitje',
-    category: 'Shtëpi',
-    municipality: 'Prizren',
-    settlement: 'Ortakoll',
-    area_m2: 220,
-    rooms: 5,
-    badge: null,
-    image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    id: 'prop-ks-103',
-    title: 'Lokal afarist qendror — Pejë',
-    price: 750,
-    type: 'qira',
-    category: 'Lokal afarist',
-    municipality: 'Pejë',
-    settlement: 'Qendër',
-    area_m2: 110,
-    rooms: null,
-    badge: '📍 Qendër',
-    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80',
-  },
-];
+interface FeaturedPropertyItem {
+  id: string;
+  title: string;
+  price: number;
+  type: string;
+  category: string;
+  municipality: string;
+  settlement: string;
+  area_m2: number;
+  rooms: number | null;
+  badge?: string | null;
+  image: string;
+}
+
+const FEATURED_PROPERTIES: FeaturedPropertyItem[] = [];
 
 const POPULAR_LOCATIONS = [
   { 
     name: 'Prishtinë', 
     count: 342, 
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Pristina%2C_Kosovo.jpg/640px-Pristina%2C_Kosovo.jpg',
-    fallback: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=400&q=80'
+    image: '/images/cities/prishtine.jpg',
+    fallback: '/images/cities/prishtine.jpg'
   },
   { 
     name: 'Prizren', 
     count: 198, 
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Panorama_of_Prizren%2C_2021.jpg/640px-Panorama_of_Prizren%2C_2021.jpg',
-    fallback: 'https://images.unsplash.com/photo-1467226632440-65f0b4957563?auto=format&fit=crop&w=400&q=80'
+    image: '/images/cities/prizren.jpg',
+    fallback: '/images/cities/prizren.jpg'
   },
   { 
     name: 'Pejë', 
     count: 124, 
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Peja_aerial.jpg/640px-Peja_aerial.jpg',
-    fallback: 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&w=400&q=80'
+    image: '/images/cities/peje.jpg',
+    fallback: '/images/cities/peje.jpg'
   },
   { 
     name: 'Ferizaj', 
     count: 87, 
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Ferizaj_city.jpg/640px-Ferizaj_city.jpg',
-    fallback: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=400&q=80'
+    image: '/images/cities/ferizaj.jpg',
+    fallback: '/images/cities/ferizaj.jpg'
   },
   { 
     name: 'Gjilan', 
     count: 72, 
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Gjilan.jpg/640px-Gjilan.jpg',
-    fallback: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'
+    image: '/images/cities/gjilan.jpg',
+    fallback: '/images/cities/gjilan.jpg'
   },
   { 
     name: 'Mitrovicë', 
     count: 56, 
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Mitrovica_city_view.jpg/640px-Mitrovica_city_view.jpg',
-    fallback: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=400&q=80'
+    image: '/images/cities/mitrovice.jpg',
+    fallback: '/images/cities/mitrovice.jpg'
   },
 ];
 
@@ -166,7 +127,7 @@ export default function HomepageClient() {
       <section className="relative bg-[#0B192C] text-white overflow-hidden">
         {/* Background texture */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_#059669_0%,_transparent_60%)] opacity-20 pointer-events-none" />
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&w=1920&q=20')] bg-cover bg-center opacity-10 pointer-events-none" />
+        <div className="absolute inset-0 bg-[url('/images/cities/prishtine.jpg')] bg-cover bg-center opacity-10 pointer-events-none" />
 
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-20">
           {/* Theme Toggle */}

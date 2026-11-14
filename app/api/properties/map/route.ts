@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-// Active properties with coordinates across Kosovo municipalities
-// In production mode, returns strictly verified and active listings from the database
-const FALLBACK_ACTIVE_PROPERTIES: any[] = [];
+import { PaymentStore } from '@/lib/payments/store';
 
 export async function GET(req: NextRequest) {
   try {
@@ -15,7 +12,7 @@ export async function GET(req: NextRequest) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-    let propertiesList = FALLBACK_ACTIVE_PROPERTIES;
+    let propertiesList: any[] = [];
 
     // Check if Supabase is connected
     if (supabaseUrl && supabaseKey && !supabaseUrl.includes('your-project')) {
@@ -61,6 +58,30 @@ export async function GET(req: NextRequest) {
       } catch (dbErr) {
         console.warn('Database query failed:', dbErr);
       }
+    }
+
+    // Fallback to PaymentStore if Supabase has no data
+    if (propertiesList.length === 0) {
+      const storeProps = await PaymentStore.getPublicProperties();
+      propertiesList = storeProps.map(p => ({
+        id: p.id,
+        title: p.title,
+        slug: p.slug || p.id,
+        listing_type: p.listing_type,
+        property_type: p.property_type,
+        municipality_name: p.municipality_id,
+        settlement_name: p.settlement_id || '',
+        price: p.price,
+        currency: p.currency,
+        area_m2: p.area_m2,
+        bedrooms: p.bedrooms,
+        cover_image: p.cover_image || (p.images && p.images[0]) || '',
+        status: p.status,
+        published_at: p.published_at,
+        expires_at: p.expires_at,
+        lat: p.lat || 42.6629,
+        lng: p.lng || 21.1655,
+      }));
     }
 
     // Filter properties (strictly active, non-expired, valid coordinates)

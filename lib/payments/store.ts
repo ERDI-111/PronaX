@@ -1,9 +1,37 @@
+import fs from 'fs';
+import path from 'path';
 import { PaymentRecord, PaymentEventRecord, ListingRenewalRecord, PropertySummary } from './types';
 import { InAppNotification } from '../notifications/types';
 
-// In-memory persistent store for production & active sessions
-// Empty initial state for production launch (no mock/fake data)
-const demoProperties: Record<string, PropertySummary> = {};
+// Disk persistence for production & local development (data/properties.json)
+const DATA_DIR = path.join(process.cwd(), 'data');
+const PROPERTIES_FILE = path.join(DATA_DIR, 'properties.json');
+
+function saveToDisk(data: Record<string, PropertySummary>) {
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    fs.writeFileSync(PROPERTIES_FILE, JSON.stringify(data, null, 2), 'utf8');
+  } catch (e) {
+    console.error('Failed to save properties to disk:', e);
+  }
+}
+
+function loadFromDisk(): Record<string, PropertySummary> {
+  try {
+    if (fs.existsSync(PROPERTIES_FILE)) {
+      const raw = fs.readFileSync(PROPERTIES_FILE, 'utf8');
+      return JSON.parse(raw);
+    }
+  } catch (e) {
+    console.error('Failed to load properties from disk:', e);
+  }
+  return {};
+}
+
+// Persistent store loaded from disk
+const demoProperties: Record<string, PropertySummary> = loadFromDisk();
 
 const inMemoryPayments: Record<string, PaymentRecord> = {};
 
@@ -15,28 +43,38 @@ const inMemoryNotifications: InAppNotification[] = [];
 
 export class PaymentStore {
   // Properties
-  static async getProperty(id: string): Promise<PropertySummary | null> {
-    if (!demoProperties[id]) {
-      // Dynamic fallback for newly registered properties during active session
-      demoProperties[id] = {
-        id,
-        title: 'Pronë në PronaX Kosovë',
-        slug: id,
-        price: 0,
-        currency: 'EUR',
-        property_type: 'Banesë',
-        listing_type: 'shitje',
-        municipality_id: 'Prishtinë',
-        settlement_id: 'Qendër',
-        address: '',
-        status: 'pending_payment',
-        renewal_count: 0,
-        owner_id: 'user-erdis-001',
-        published_at: null,
-        expires_at: null,
-      };
+  static async createProperty(property: PropertySummary): Promise<PropertySummary> {
+    demoProperties[property.id] = { ...property };
+    saveToDisk(demoProperties);
+    return demoProperties[property.id];
+  }
+
+  static async updateProperty(id: string, updates: Partial<PropertySummary>): Promise<PropertySummary | null> {
+    const prop = demoProperties[id];
+    if (!prop) return null;
+    demoProperties[id] = {
+      ...prop,
+      ...updates,
+      id, // protect id from being overwritten
+    };
+    saveToDisk(demoProperties);
+    return demoProperties[id];
+  }
+
+  static async deleteProperty(id: string): Promise<boolean> {
+    if (demoProperties[id]) {
+      delete demoProperties[id];
+      saveToDisk(demoProperties);
+      return true;
     }
-    return demoProperties[id] || null;
+    return false;
+  }
+
+  static async getProperty(id: string): Promise<PropertySummary | null> {
+    if (demoProperties[id]) return demoProperties[id];
+    const bySlug = Object.values(demoProperties).find(p => p.slug === id);
+    if (bySlug) return bySlug;
+    return null;
   }
 
   static async getAllProperties(): Promise<PropertySummary[]> {
@@ -56,9 +94,95 @@ export class PaymentStore {
     const now = new Date();
     return Object.values(demoProperties).filter(p => {
       if (p.status !== 'published') return false;
-      if (!p.expires_at) return false;
-      return new Date(p.expires_at) > now;
+      if (p.expires_at && new Date(p.expires_at) <= now) return false;
+      return true;
     });
+  }
+
+  static async searchProperties(params: {
+    q?: string;
+    tipi?: string;
+    kategoria?: string;
+    komuna?: string;
+    vendbanimi?: string;
+    cmimi_min?: number;
+    cmimi_max?: number;
+    siperfaqja_min?: number;
+    siperfaqja_max?: number;
+    dhoma?: number;
+    sort?: 'newest' | 'price_asc' | 'price_desc' | 'area_desc';
+    page?: number;
+    per_page?: number;
+    includePending?: boolean;
+  }): Promise<{ properties: PropertySummary[]; total: number; page: number; per_page: number; total_pages: number }> {
+    let list = Object.values(demoProperties);
+
+    if (!params.includePending) {
+      const now = new Date();
+      list = list.filter(p => {
+        if (p.status !== 'published') return false;
+        if (p.expires_at && new Date(p.expires_at) <= now) return false;
+        return true;
+      });
+    }
+
+    if (params.q) {
+      const q = params.q.toLowerCase().trim();
+      list = list.filter(p => 
+        (p.title && p.title.toLowerCase().includes(q)) ||
+        (p.description && p.description.toLowerCase().includes(q)) ||
+        (p.address && p.address.toLowerCase().includes(q)) ||
+        (p.municipality_id && p.municipality_id.toLowerCase().includes(q)) ||
+        (p.settlement_id && p.settlement_id.toLowerCase().includes(q))
+      );
+    }
+
+    if (params.tipi && params.tipi !== 'te-gjitha') {
+      list = list.filter(p => p.listing_type === params.tipi);
+    }
+    if (params.kategoria && params.kategoria !== 'te-gjitha') {
+      list = list.filter(p => p.property_type === params.kategoria);
+    }
+    if (params.komuna && params.komuna !== 'te-gjitha') {
+      list = list.filter(p => p.municipality_id === params.komuna);
+    }
+    if (params.cmimi_min) {
+      list = list.filter(p => p.price >= params.cmimi_min!);
+    }
+    if (params.cmimi_max) {
+      list = list.filter(p => p.price <= params.cmimi_max!);
+    }
+    if (params.siperfaqja_min) {
+      list = list.filter(p => (p.area_m2 || 0) >= params.siperfaqja_min!);
+    }
+    if (params.dhoma) {
+      list = list.filter(p => (p.bedrooms || 0) === params.dhoma);
+    }
+
+    // Sort
+    const sort = params.sort || 'newest';
+    list.sort((a, b) => {
+      if (sort === 'price_asc') return a.price - b.price;
+      if (sort === 'price_desc') return b.price - a.price;
+      if (sort === 'area_desc') return (b.area_m2 || 0) - (a.area_m2 || 0);
+      const tA = a.published_at ? new Date(a.published_at).getTime() : 0;
+      const tB = b.published_at ? new Date(b.published_at).getTime() : 0;
+      return tB - tA;
+    });
+
+    const page = params.page || 1;
+    const per_page = params.per_page || 12;
+    const total = list.length;
+    const offset = (page - 1) * per_page;
+    const paginated = list.slice(offset, offset + per_page);
+
+    return {
+      properties: paginated,
+      total,
+      page,
+      per_page,
+      total_pages: Math.ceil(total / per_page) || 1,
+    };
   }
 
   static async updatePropertyStatus(
@@ -84,6 +208,7 @@ export class PaymentStore {
     if (dates?.expiration_warning_1d_sent_at) prop.expiration_warning_1d_sent_at = dates.expiration_warning_1d_sent_at;
     if (dates?.expired_notification_sent_at) prop.expired_notification_sent_at = dates.expired_notification_sent_at;
 
+    saveToDisk(demoProperties);
     return prop;
   }
 

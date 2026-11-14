@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { PaymentStore } from '@/lib/payments/store';
 
 // --- Types ---
 export interface PropertySearchParams {
@@ -17,19 +18,6 @@ export interface PropertySearchParams {
   per_page?: number;
 }
 
-// --- Fallback kur Supabase nuk është i konfiguruar ---
-// Kthen listë bosh me mesazh të qartë që DB nuk është aktive.
-// Në prodhim (Supabase i konfiguruar) kjo degë nuk ekzekutohet kurrë.
-const EMPTY_FALLBACK = {
-  properties: [] as object[],
-  total: 0,
-  page: 1,
-  per_page: 12,
-  total_pages: 0,
-  source: 'offline' as const,
-  message: 'Baza e të dhënave nuk është e konfiguruar. Prona do të shfaqen pasi të konfigurohet Supabase.',
-};
-
 type SortKey = 'newest' | 'price_asc' | 'price_desc' | 'area_desc';
 
 export async function GET(req: NextRequest) {
@@ -40,15 +28,17 @@ export async function GET(req: NextRequest) {
     tipi: (searchParams.get('tipi') as PropertySearchParams['tipi']) || undefined,
     kategoria: searchParams.get('kategoria') || undefined,
     komuna: searchParams.get('komuna') || undefined,
+    vendbanimi: searchParams.get('vendbanimi') || undefined,
     cmimi_min: searchParams.get('cmimi_min') ? Number(searchParams.get('cmimi_min')) : undefined,
     cmimi_max: searchParams.get('cmimi_max') ? Number(searchParams.get('cmimi_max')) : undefined,
     siperfaqja_min: searchParams.get('siperfaqja_min') ? Number(searchParams.get('siperfaqja_min')) : undefined,
+    dhoma: searchParams.get('dhoma') ? Number(searchParams.get('dhoma')) : undefined,
     sort: (searchParams.get('sort') as PropertySearchParams['sort']) || 'newest',
     page: Number(searchParams.get('page') || '1'),
     per_page: Math.min(Number(searchParams.get('per_page') || '12'), 48),
   };
 
-  // Try Supabase if credentials exist
+  // 1. Try Supabase if credentials exist
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -60,7 +50,7 @@ export async function GET(req: NextRequest) {
       let query = supabase
         .from('properties')
         .select('*', { count: 'exact' })
-        .eq('status', 'active')
+        .eq('status', 'published')
         .gt('expires_at', new Date().toISOString());
 
       if (params.q) query = query.ilike('title', `%${params.q}%`);
@@ -84,7 +74,7 @@ export async function GET(req: NextRequest) {
       query = query.range(offset, offset + (params.per_page || 12) - 1);
 
       const { data, count, error } = await query;
-      if (!error && data) {
+      if (!error && data && data.length > 0) {
         return NextResponse.json({
           properties: data,
           total: count || 0,
@@ -95,15 +85,14 @@ export async function GET(req: NextRequest) {
         });
       }
     } catch {
-      // Fall through to empty fallback
+      // Fall through to PaymentStore
     }
   }
 
-  // --- Offline fallback: Supabase nuk është i konfiguruar ---
-  // Kthen gjendje bosh me mesazh informues (jo të dhëna demo si reale).
+  // 2. Query persistent store (PaymentStore)
+  const storeResult = await PaymentStore.searchProperties(params);
   return NextResponse.json({
-    ...EMPTY_FALLBACK,
-    page: params.page || 1,
-    per_page: params.per_page || 12,
+    ...storeResult,
+    source: 'store',
   });
 }
