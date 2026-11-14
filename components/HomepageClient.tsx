@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { KOSOVO_MUNICIPALITIES } from '@/lib/locations/kosovo-data';
 import { useTheme } from '@/lib/theme/ThemeProvider';
+import { AISmartSearchBar } from '@/components/ai';
 
 const FEATURED_PROPERTIES = [
   {
@@ -195,8 +196,13 @@ export default function HomepageClient() {
               Publiko me planet tona transparente: <strong className="text-white">Falas (3 ditë), Javor (2.99 €) ose Mujor (9.99 €)</strong>.
             </p>
 
+            {/* AI Smart Search Bar */}
+            <div className="mt-8 mb-4 max-w-4xl mx-auto">
+              <AISmartSearchBar />
+            </div>
+
             {/* Search Widget */}
-            <div className="bg-white dark:bg-slate-800 rounded-3xl p-4 sm:p-5 shadow-2xl max-w-4xl mx-auto text-left border border-slate-100 dark:border-slate-700 mt-8">
+            <div className="bg-white dark:bg-slate-800 rounded-3xl p-4 sm:p-5 shadow-2xl max-w-4xl mx-auto text-left border border-slate-100 dark:border-slate-700 mt-4">
               {/* Tabs */}
               <div className="flex gap-2 border-b border-slate-100 dark:border-slate-700 pb-3 mb-4">
                 {(['shitje', 'qira'] as const).map(t => (

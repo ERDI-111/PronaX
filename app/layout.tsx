@@ -3,6 +3,7 @@ import "./globals.css";
 import { OrganizationJsonLd } from "@/components/JsonLd";
 import { ThemeProvider } from "@/lib/theme/ThemeProvider";
 import { CompareProvider } from "@/lib/compare/CompareContext";
+import { AICustomerChatbot } from "@/components/ai";
 
 export const metadata: Metadata = {
   title: {
@@ -78,6 +79,7 @@ export default function RootLayout({
           <CompareProvider>
             <OrganizationJsonLd />
             {children}
+            <AICustomerChatbot />
           </CompareProvider>
         </ThemeProvider>
       </body>

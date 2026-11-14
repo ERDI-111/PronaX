@@ -13,6 +13,7 @@ import {
   Wind, Zap, TreePine, Maximize2, X, Star, Sparkles, Scale
 } from 'lucide-react';
 import { useCompare } from '@/lib/compare/CompareContext';
+import { AIMarketInsightsCard } from '@/components/ai';
 
 // --- Mock data matching the search API ---
 const MOCK_PROPERTIES: Record<string, any> = {
@@ -818,6 +819,15 @@ function PropertyDetailContent() {
                   {property.description}
                 </p>
               </div>
+
+              {/* PronaX AI Market Insights Widget */}
+              <AIMarketInsightsCard
+                municipality={property.municipality_name || 'prishtine'}
+                propertyType={property.property_type || 'banese'}
+                listingType={property.listing_type as 'shitje' | 'qira'}
+                propertyPrice={property.price}
+                areaM2={property.area_m2}
+              />
 
               {/* Map Placeholder */}
               <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-xs">

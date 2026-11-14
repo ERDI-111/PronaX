@@ -10,6 +10,7 @@ import {
   getMunicipality 
 } from '@/lib/locations/kosovo-data';
 import { SecuritySanitizer } from '@/lib/security/sanitize';
+import { AIListingAssistantModal } from '@/components/ai';
 import { 
   Building2, 
   Home, 
@@ -398,6 +399,35 @@ export default function PropertyPublishingWizard() {
           {/* STEP 3: Basic Info & Kosovo Municipality */}
           {currentStep === 3 && (
             <div className="space-y-5 text-xs">
+              {/* PronaX AI Listing Assistant Header Box */}
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-slate-850 border border-emerald-200/80 dark:border-emerald-800/50 shadow-sm">
+                <div>
+                  <h4 className="font-bold text-slate-850 dark:text-white text-xs sm:text-sm">
+                    Keni nevojë për ndihmë me tekstin?
+                  </h4>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-300">
+                    PronaX AI gjeneron tituj dhe përshkrime tërheqëse për shpalljen tuaj.
+                  </p>
+                </div>
+                <AIListingAssistantModal
+                  formData={{
+                    propertyType: formData.property_type,
+                    listingType: formData.listing_type as 'shitje' | 'qira',
+                    municipality: formData.municipality_id,
+                    price: Number(formData.price) || 0,
+                    areaM2: Number(formData.area_m2) || undefined,
+                    bedrooms: Number(formData.bedrooms) || undefined,
+                    bathrooms: Number(formData.bathrooms) || undefined,
+                    floor: Number(formData.floor) || undefined,
+                    userNotes: formData.description,
+                  }}
+                  onApply={({ title, description }) => {
+                    updateField('title', title);
+                    updateField('description', description);
+                  }}
+                />
+              </div>
+
               <div>
                 <label className="font-bold text-slate-700 block mb-1">Titulli i Shpalljes *</label>
                 <input
