@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "installedAt": "2026-11-14T22:31:44.173Z",
+  "files": {
+    "C:\\Users\\erdis\\pronax\\.claude\\settings.json": {
+      "plugins": [
+        "ruflo-mods@ruflo",
+        "ruflo-swarm@ruflo",
+        "ruflo-console@ruflo"
+      ],
+      "marketplace": true,
+      "env": true,
+      "claudeInstalled": []
+    }
+  }
+}

@@ -23,12 +23,20 @@ interface ChatMessage {
   escalated?: boolean;
 }
 
-const QUICK_QUESTIONS = [
+const QUICK_QUESTIONS_SQ = [
+  '🔍 Gjej banesë në Prishtinë nën 80,000 €',
   'Cilat janë 3 planet e publikimit?',
   'Si të publikoj një pronë falas?',
   'A ka abonim ose debitim automatik?',
   'Si bëhet rinovimi manual?',
-  'Sa kushton publikimi mujor?',
+];
+
+const QUICK_QUESTIONS_EN = [
+  '🔍 Find apartment in Prishtina under €80,000',
+  'What are the 3 listing plans?',
+  'How do I publish a property for free?',
+  'Are there automatic subscriptions?',
+  'How do I manually renew a listing?',
 ];
 
 export function AICustomerChatbot() {
@@ -265,7 +273,7 @@ export function AICustomerChatbot() {
               {/* Sugjerime pyetjesh të shpejta */}
               {messages.length <= 2 && (
                 <div className="px-3 py-2 bg-slate-100/70 dark:bg-slate-800/40 border-t border-slate-200 dark:border-slate-800 flex gap-1.5 overflow-x-auto scrollbar-none">
-                  {QUICK_QUESTIONS.map((q, idx) => (
+                  {(language === 'en' ? QUICK_QUESTIONS_EN : QUICK_QUESTIONS_SQ).map((q, idx) => (
                     <button
                       key={idx}
                       onClick={() => handleSendMessage(q)}

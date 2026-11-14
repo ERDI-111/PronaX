@@ -1,9 +1,13 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { OrganizationJsonLd } from "@/components/JsonLd";
 import { ThemeProvider } from "@/lib/theme/ThemeProvider";
 import { CompareProvider } from "@/lib/compare/CompareContext";
 import { AICustomerChatbot } from "@/components/ai";
+
+export const viewport: Viewport = {
+  themeColor: "#0B192C",
+};
 
 export const metadata: Metadata = {
   title: {
@@ -44,7 +48,6 @@ export const metadata: Metadata = {
     icon: "/icon-192.svg",
     apple: "/icon-192.svg",
   },
-  themeColor: "#0B192C",
   verification: {
     google: process.env.GOOGLE_SITE_VERIFICATION || "",
   },

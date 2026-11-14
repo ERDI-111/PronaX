@@ -138,6 +138,17 @@ const ACTION_ICONS: Record<string, string> = {
   toggle: '🔄',
 };
 
+const ROLLOUT_STAGES: Record<string, { stage: number; label: string; badgeColor: string }> = {
+  smart_search: { stage: 1, label: 'Faza 1 · Kërkim', badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  customer_support: { stage: 2, label: 'Faza 2 · Mbështetje', badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  listing_assistant: { stage: 3, label: 'Faza 3 · Shpallje', badgeColor: 'bg-blue-50 text-blue-700 border-blue-200' },
+  admin_assistant: { stage: 4, label: 'Faza 4 · Admin', badgeColor: 'bg-purple-50 text-purple-700 border-purple-200' },
+  fraud_detection: { stage: 5, label: 'Faza 5 · Moderim', badgeColor: 'bg-amber-50 text-amber-700 border-amber-200' },
+  notification_retention: { stage: 6, label: 'Faza 6 · Njoftime', badgeColor: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
+  market_insights: { stage: 7, label: 'Faza 7 · Tregu', badgeColor: 'bg-teal-50 text-teal-700 border-teal-200' },
+  recommendation: { stage: 8, label: 'Faza 8 · Rekomandim', badgeColor: 'bg-rose-50 text-rose-700 border-rose-200' },
+};
+
 // ---- Komponenti kryesor ----
 export default function AdminAIPage() {
   const [activeTab, setActiveTab] = useState<AdminAITab>('agjentet');
@@ -466,7 +477,14 @@ export default function AdminAIPage() {
                         <AgentIcon className={`w-5 h-5 text-${color}-600`} />
                       </div>
                       <div>
-                        <h3 className="font-black text-slate-900 text-sm">{agent.name}</h3>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-black text-slate-900 text-sm">{agent.name}</h3>
+                          {ROLLOUT_STAGES[agent.agentId] && (
+                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${ROLLOUT_STAGES[agent.agentId].badgeColor}`}>
+                              {ROLLOUT_STAGES[agent.agentId].label}
+                            </span>
+                          )}
+                        </div>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <span className={`w-1.5 h-1.5 rounded-full ${agent.isEnabled && !isEmergencyActive ? 'bg-emerald-500' : 'bg-slate-300'}`} />
                           <span className="text-[11px] font-semibold text-slate-500">
