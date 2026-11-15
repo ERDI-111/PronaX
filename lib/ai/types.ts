@@ -3,7 +3,7 @@
  * Faza 2: Dizajni i Arkitekturës
  */
 
-// ID-të e agjentëve të licencuar
+// ID-të e agjentëve të licencuar (10 Agjentë të Specializuar)
 export type AgentId =
   | 'customer_support'
   | 'listing_assistant'
@@ -12,7 +12,9 @@ export type AgentId =
   | 'admin_assistant'
   | 'notification_retention'
   | 'market_insights'
-  | 'recommendation';
+  | 'recommendation'
+  | 'auth_verification'
+  | 'admin_notification';
 
 // Nivelet e rrezikut për Agjentin 3 (Fraud Detection)
 export type RiskLevel = 'low' | 'medium' | 'high' | 'critical';

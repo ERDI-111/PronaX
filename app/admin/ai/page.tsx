@@ -102,6 +102,8 @@ const AGENT_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
   notification_retention: Bell,
   market_insights: TrendingUp,
   recommendation: Star,
+  auth_verification: ShieldCheck,
+  admin_notification: Activity,
 };
 
 const AGENT_COLORS: Record<string, string> = {
@@ -113,6 +115,8 @@ const AGENT_COLORS: Record<string, string> = {
   notification_retention: 'cyan',
   market_insights: 'orange',
   recommendation: 'pink',
+  auth_verification: 'teal',
+  admin_notification: 'indigo',
 };
 
 const RISK_BADGES: Record<string, string> = {

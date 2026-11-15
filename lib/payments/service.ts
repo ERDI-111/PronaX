@@ -13,6 +13,7 @@ import {
   FinancialReport,
   PropertySummary 
 } from './types';
+import { AdminNotificationAgent } from '../ai/agents/admin-notification';
 
 export class PaymentService {
   static readonly LISTING_DURATION_DAYS = 30;
@@ -142,6 +143,19 @@ export class PaymentService {
           status: nextStatus,
         },
       });
+
+      // Agent 10 notification for free activation
+      AdminNotificationAgent.notifyPaymentEvent({
+        paymentId,
+        userEmail,
+        propertyId,
+        plan: plan.id,
+        planName: `${plan.name} (Falas 3 ditë)`,
+        amount: '0.00',
+        currency: 'EUR',
+        status: 'successful',
+        provider: 'free_plan',
+      }).catch(err => console.error('[PaymentService] Admin notification failed:', err));
 
       return {
         paymentId,
@@ -345,6 +359,32 @@ export class PaymentService {
           },
         });
       }
+
+      // AGENT 10: Server-verified payment success notification
+      AdminNotificationAgent.notifyPaymentEvent({
+        paymentId: payment.id,
+        userEmail: (payment.metadata?.userEmail as string) || 'klient@pronax-ks.com',
+        propertyId: payment.property_id,
+        plan: (payment.metadata?.planId as string) || 'weekly',
+        planName: (payment.metadata?.planName as string) || `${(payment.amount_cents / 100).toFixed(2)} €`,
+        amount: (payment.amount_cents / 100).toFixed(2),
+        currency: payment.currency || 'EUR',
+        status: 'successful',
+        provider: providerName,
+      }).catch(err => console.error('[PaymentService] Admin payment notification failed:', err));
+    } else if (verification.status === 'failed') {
+      // AGENT 10: Payment failure notification
+      AdminNotificationAgent.notifyPaymentEvent({
+        paymentId: payment.id,
+        userEmail: (payment.metadata?.userEmail as string) || 'klient@pronax-ks.com',
+        propertyId: payment.property_id,
+        plan: (payment.metadata?.planId as string) || 'weekly',
+        planName: (payment.metadata?.planName as string) || `${(payment.amount_cents / 100).toFixed(2)} €`,
+        amount: (payment.amount_cents / 100).toFixed(2),
+        currency: payment.currency || 'EUR',
+        status: 'failed',
+        provider: providerName,
+      }).catch(err => console.error('[PaymentService] Admin payment failed notification:', err));
     }
 
     return { 

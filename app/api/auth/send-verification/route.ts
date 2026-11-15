@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { VerificationService } from '@/lib/auth/verification';
-import { EmailService } from '@/lib/email/service';
-import { EmailTemplateRenderer } from '@/lib/email/templates';
+import { AuthVerificationAgent } from '@/lib/ai/agents/auth-verification';
 
 export async function POST(req: NextRequest) {
   try {
@@ -43,39 +41,31 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 2. Generate 6-digit code with 5-minute expiry & rate limit
-    const codeResult = await VerificationService.createCode(normalizedEmail);
+    const purpose = (body.purpose || 'login') as any;
+    const lang = (body.language || 'sq') as 'sq' | 'en';
+    const clientIp = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '127.0.0.1';
 
-    if (!codeResult.success) {
+    // 2. Delegate to Agent 9 (Auth & 2FA Verification Agent)
+    const otpResult = await AuthVerificationAgent.sendVerificationOtp(normalizedEmail, purpose, lang, {
+      ipAddress: clientIp,
+      deviceInfo: req.headers.get('user-agent') || undefined,
+    });
+
+    if (!otpResult.success) {
       return NextResponse.json(
         {
-          error: codeResult.error,
-          waitSeconds: codeResult.waitSeconds,
+          error: otpResult.error || otpResult.message,
+          waitSeconds: otpResult.waitSeconds,
         },
-        { status: 429 }
+        { status: otpResult.waitSeconds ? 429 : 500 }
       );
     }
 
-    const code = codeResult.code!;
-
-    // 3. Render and send verification email
-    const template = EmailTemplateRenderer.render('email_verification', {
-      code,
-      email: normalizedEmail,
-    });
-
-    const sendResult = await EmailService.sendEmail({
-      to: normalizedEmail,
-      subject: template.subject,
-      html: template.html,
-      templateType: 'email_verification',
-      metadata: { purpose: 'login_verification' },
-    });
-
     return NextResponse.json({
       success: true,
-      message: 'Kodi 6-shifror i verifikimit u dërgua me sukses në email-in tuaj.',
+      message: otpResult.message,
       cooldownSeconds: 60,
+      deliveryResult: otpResult.deliveryResult,
     });
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : 'Dështoi dërgimi i kodit të verifikimit.';

@@ -1,5 +1,5 @@
 /**
- * PronaX AI — Eksporti i 8 Agjentëve të Specializuar
+ * PronaX AI — Eksporti i 10 Agjentëve të Specializuar
  */
 
 export * from './customer-support';
@@ -10,3 +10,5 @@ export * from './admin-assistant';
 export * from './notification-retention';
 export * from './market-insights';
 export * from './recommendation';
+export * from './auth-verification';
+export * from './admin-notification';

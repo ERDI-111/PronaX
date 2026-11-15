@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PaymentStore } from '@/lib/payments/store';
 import { PropertySummary } from '@/lib/payments/types';
 import { SecuritySanitizer } from '@/lib/security/sanitize';
+import { AdminNotificationAgent } from '@/lib/ai/agents/admin-notification';
 
 function slugify(text: string): string {
   return text
@@ -117,6 +118,11 @@ export async function POST(req: NextRequest) {
     };
 
     const saved = await PaymentStore.createProperty(property);
+
+    // Notify Administrator via Agent 10 (Email Management & Admin Notification Agent)
+    AdminNotificationAgent.notifyNewPropertySubmitted(saved, {
+      requiresModeration: (status as string) === 'pending_moderation',
+    }).catch(err => console.warn('[Agent 10] Property notification warning:', err));
 
     // If Free plan, record payment event for audit
     if (isFree) {

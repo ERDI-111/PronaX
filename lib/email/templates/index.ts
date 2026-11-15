@@ -256,6 +256,396 @@ export class EmailTemplateRenderer {
         `, 'Gjetje e re e pronës në PronaX');
         return { subject, html };
       }
+
+      // ==============================================================================
+      // AGENT 9: AUTHENTICATION, 2FA AND EMAIL VERIFICATION TEMPLATES
+      // ==============================================================================
+
+      case 'registration_otp': {
+        const code = data.code || '123456';
+        const lang = data.language || 'sq';
+        const isSq = lang === 'sq';
+        const subject = isSq
+          ? `Kodi yt i regjistrimit: ${code} – PronaX`
+          : `Your Registration Code: ${code} – PronaX`;
+
+        const html = wrapEmail(`
+          <div style="text-align: center; margin-bottom: 24px;">
+            <div style="display: inline-block; width: 48px; height: 48px; line-height: 48px; border-radius: 14px; background-color: #ecfdf5; color: #059669; font-size: 24px; font-weight: bold; margin-bottom: 12px;">
+              ✓
+            </div>
+            <h1 style="color: #0B192C; font-size: 22px; font-weight: 800; margin: 0 0 8px 0;">
+              ${isSq ? 'Verifikimi i Regjistrimit' : 'Registration Verification'}
+            </h1>
+            <p style="color: #64748b; font-size: 14px; margin: 0;">
+              ${isSq ? 'Përdor kodin e mëposhtëm me 6 shifra për të verifikuar llogarinë tënde në PronaX:' : 'Use the 6-digit code below to verify your PronaX account:'}
+            </p>
+          </div>
+
+          <div style="text-align: center; margin: 28px 0;">
+            <div style="display: inline-block; background: #0B192C; color: #ffffff; font-family: monospace; font-size: 36px; font-weight: 900; letter-spacing: 12px; padding: 18px 32px 18px 44px; border-radius: 16px; box-shadow: 0 4px 12px rgba(11, 25, 44, 0.15);">
+              ${code}
+            </div>
+          </div>
+
+          <div class="info-card" style="background-color: #f8fafc; border-left: 4px solid #059669; padding: 14px 16px;">
+            <div style="color: #334155; font-size: 13px; margin-bottom: 6px;">
+              ⏱ <strong>${isSq ? 'Kodi skadon pas 5 minutash.' : 'This code expires in 5 minutes.'}</strong>
+            </div>
+            <div style="color: #64748b; font-size: 12px;">
+              🔒 ${isSq ? 'Kodi është për përdorim të njëhershëm. Mos e ndani me askënd.' : 'This code is single-use. Do not share it with anyone.'}
+            </div>
+          </div>
+
+          <p style="color: #94a3b8; font-size: 11px; text-align: center; margin-top: 24px;">
+            ${isSq ? 'Nëse nuk keni kërkuar regjistrim në PronaX, mund ta injoroni me siguri këtë email.' : 'If you did not request registration on PronaX, you can safely ignore this email.'}
+          </p>
+        `, `${isSq ? 'Kodi yt i regjistrimit' : 'Your registration code'}: ${code}`);
+        return { subject, html };
+      }
+
+      case 'login_otp': {
+        const code = data.code || '123456';
+        const lang = data.language || 'sq';
+        const isSq = lang === 'sq';
+        const subject = isSq
+          ? `Kodi yt i hyrjes 2FA: ${code} – PronaX`
+          : `Your 2FA Login Code: ${code} – PronaX`;
+
+        const html = wrapEmail(`
+          <div style="text-align: center; margin-bottom: 24px;">
+            <div style="display: inline-block; width: 48px; height: 48px; line-height: 48px; border-radius: 14px; background-color: #eff6ff; color: #2563eb; font-size: 24px; font-weight: bold; margin-bottom: 12px;">
+              🔐
+            </div>
+            <h1 style="color: #0B192C; font-size: 22px; font-weight: 800; margin: 0 0 8px 0;">
+              ${isSq ? 'Verifikimi me Dy Faktorë (2FA)' : 'Two-Factor Login Verification'}
+            </h1>
+            <p style="color: #64748b; font-size: 14px; margin: 0;">
+              ${isSq ? 'Kemi pranuar një kërkesë për hyrje në llogarinë tuaj. Shënoni kodin e mëposhtëm:' : 'We received a login request for your account. Enter the code below:'}
+            </p>
+          </div>
+
+          <div style="text-align: center; margin: 28px 0;">
+            <div style="display: inline-block; background: #0B192C; color: #ffffff; font-family: monospace; font-size: 36px; font-weight: 900; letter-spacing: 12px; padding: 18px 32px 18px 44px; border-radius: 16px; box-shadow: 0 4px 12px rgba(11, 25, 44, 0.15);">
+              ${code}
+            </div>
+          </div>
+
+          <div class="info-card" style="background-color: #f8fafc; border-left: 4px solid #2563eb; padding: 14px 16px;">
+            <div style="color: #334155; font-size: 13px; margin-bottom: 6px;">
+              ⏱ <strong>${isSq ? 'Vlefshmëria: 5 minuta' : 'Validity: 5 minutes'}</strong>
+            </div>
+            <div style="color: #64748b; font-size: 12px;">
+              ${data.ipAddress ? `<div><strong>IP:</strong> ${data.ipAddress}</div>` : ''}
+              ${data.deviceInfo ? `<div><strong>Pajisja:</strong> ${data.deviceInfo}</div>` : ''}
+            </div>
+          </div>
+
+          <p style="color: #dc2626; font-size: 11px; text-align: center; margin-top: 24px;">
+            ${isSq ? 'Nëse nuk po provoni të hyni ju, ndryshoni fjalëkalimin menjëherë!' : 'If this wasn\'t you, change your password immediately!'}
+          </p>
+        `, `${isSq ? 'Kodi i hyrjes' : 'Your login code'}: ${code}`);
+        return { subject, html };
+      }
+
+      case 'password_reset_otp': {
+        const code = data.code || '123456';
+        const lang = data.language || 'sq';
+        const isSq = lang === 'sq';
+        const subject = isSq
+          ? `Kodi për rivendosjen e fjalëkalimit: ${code} – PronaX`
+          : `Password Recovery Code: ${code} – PronaX`;
+
+        const html = wrapEmail(`
+          <div style="text-align: center; margin-bottom: 24px;">
+            <div style="display: inline-block; width: 48px; height: 48px; line-height: 48px; border-radius: 14px; background-color: #fef2f2; color: #dc2626; font-size: 24px; font-weight: bold; margin-bottom: 12px;">
+              🔑
+            </div>
+            <h1 style="color: #0B192C; font-size: 22px; font-weight: 800; margin: 0 0 8px 0;">
+              ${isSq ? 'Rivendosja e Fjalëkalimit' : 'Password Recovery'}
+            </h1>
+            <p style="color: #64748b; font-size: 14px; margin: 0;">
+              ${isSq ? 'Përdorni kodin 6-shifror për të zgjedhur një fjalëkalim të ri:' : 'Use this 6-digit code to reset your password:'}
+            </p>
+          </div>
+
+          <div style="text-align: center; margin: 28px 0;">
+            <div style="display: inline-block; background: #0B192C; color: #ffffff; font-family: monospace; font-size: 36px; font-weight: 900; letter-spacing: 12px; padding: 18px 32px 18px 44px; border-radius: 16px; box-shadow: 0 4px 12px rgba(11, 25, 44, 0.15);">
+              ${code}
+            </div>
+          </div>
+
+          <div class="info-card" style="background-color: #f8fafc; border-left: 4px solid #dc2626; padding: 14px 16px;">
+            <div style="color: #334155; font-size: 13px; margin-bottom: 6px;">
+              ⏱ <strong>${isSq ? 'Kodi skadon pas 5 minutash.' : 'Code expires in 5 minutes.'}</strong>
+            </div>
+            <div style="color: #64748b; font-size: 12px;">
+              ${isSq ? 'Nëse nuk e keni kërkuar këtë, llogaria juaj mbetet e sigurt.' : 'If you didn\'t request this, your account remains secure.'}
+            </div>
+          </div>
+        `, `Kodi: ${code}`);
+        return { subject, html };
+      }
+
+      case 'email_verify_otp': {
+        const code = data.code || '123456';
+        const lang = data.language || 'sq';
+        const isSq = lang === 'sq';
+        const subject = isSq
+          ? `Kodi i konfirmimit të email-it: ${code} – PronaX`
+          : `Email Confirmation Code: ${code} – PronaX`;
+
+        const html = wrapEmail(`
+          <div style="text-align: center; margin-bottom: 24px;">
+            <h1 style="color: #0B192C; font-size: 22px; font-weight: 800; margin: 0 0 8px 0;">
+              ${isSq ? 'Konfirmo Adresën Tënde të Email-it' : 'Confirm Your Email Address'}
+            </h1>
+            <p style="color: #64748b; font-size: 14px; margin: 0;">
+              ${isSq ? 'Shënoni këtë kod me 6 shifra për të përfunduar verifikimin:' : 'Enter this 6-digit code to complete verification:'}
+            </p>
+          </div>
+
+          <div style="text-align: center; margin: 28px 0;">
+            <div style="display: inline-block; background: #0B192C; color: #ffffff; font-family: monospace; font-size: 36px; font-weight: 900; letter-spacing: 12px; padding: 18px 32px 18px 44px; border-radius: 16px;">
+              ${code}
+            </div>
+          </div>
+
+          <div class="info-card">
+            <div>⏱ ${isSq ? 'Afati: 5 minuta' : 'Expires in: 5 minutes'}</div>
+          </div>
+        `, `Kodi: ${code}`);
+        return { subject, html };
+      }
+
+      case 'security_alert': {
+        const lang = data.language || 'sq';
+        const isSq = lang === 'sq';
+        const subject = isSq
+          ? `⚠️ Njoftim Sigurie për Llogarinë tuaj PronaX`
+          : `⚠️ Security Alert for Your PronaX Account`;
+
+        const html = wrapEmail(`
+          <div style="text-align: center; margin-bottom: 20px;">
+            <div style="display: inline-block; width: 48px; height: 48px; line-height: 48px; border-radius: 14px; background-color: #fef2f2; color: #dc2626; font-size: 24px; font-weight: bold; margin-bottom: 12px;">
+              ⚠️
+            </div>
+            <h1 style="color: #dc2626; font-size: 20px; font-weight: 800;">
+              ${data.title || (isSq ? 'Aktivitet i Ri Sigurie' : 'Security Activity Alert')}
+            </h1>
+          </div>
+
+          <div class="info-card" style="border-left: 4px solid #dc2626;">
+            <div><strong>${isSq ? 'Ngjarja:' : 'Event:'}</strong> ${data.eventDescription || 'Aktivitet i dyshimtë'}</div>
+            <div><strong>${isSq ? 'Koha:' : 'Timestamp:'}</strong> ${data.timestamp || new Date().toLocaleString()}</div>
+            ${data.ipAddress ? `<div><strong>IP:</strong> ${data.ipAddress}</div>` : ''}
+            ${data.location ? `<div><strong>${isSq ? 'Lokacioni:' : 'Location:'}</strong> ${data.location}</div>` : ''}
+          </div>
+
+          <p style="color: #334155; font-size: 13px;">
+            ${isSq ? 'Nëse ky veprim nuk është bërë nga ju, ju lutem ndryshoni menjëherë fjalëkalimin dhe kontaktoni administratorin në pronaxestate@outlook.com.' : 'If this was not done by you, please change your password immediately and contact support at pronaxestate@outlook.com.'}
+          </p>
+          <a href="${baseUrl}/fjalekalimi-harruar" class="cta-btn" style="background-color: #dc2626;">
+            ${isSq ? 'Siguro Llogarinë Tënde' : 'Secure Your Account'}
+          </a>
+        `, 'Njoftim Sigurie PronaX');
+        return { subject, html };
+      }
+
+      // ==============================================================================
+      // AGENT 10: EMAIL MANAGEMENT AND ADMIN NOTIFICATION TEMPLATES (pronaxestate@outlook.com)
+      // ==============================================================================
+
+      case 'admin_contact_form': {
+        const subject = `📬 [PronaX Kontakt] ${data.subject || 'Mesazh i ri nga vizitori'} – ${data.name || 'Anonim'}`;
+        const adminUrl = `${baseUrl}/admin/dashboard?tab=mesazhet`;
+        const html = wrapEmail(`
+          <div style="border-bottom: 2px solid #059669; padding-bottom: 12px; margin-bottom: 20px;">
+            <span style="background-color: #ecfdf5; color: #059669; font-size: 11px; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase;">
+              Forma e Kontaktit
+            </span>
+            <h1 style="color: #0B192C; font-size: 20px; font-weight: 800; margin: 8px 0 0 0;">Mesazh i Ri nga Vizitori</h1>
+          </div>
+
+          <div class="info-card">
+            <div class="info-row"><strong>Dërguesi:</strong> <span>${data.name}</span></div>
+            <div class="info-row"><strong>Email:</strong> <a href="mailto:${data.email}">${data.email}</a></div>
+            ${data.phone ? `<div class="info-row"><strong>Telefoni:</strong> <span>${data.phone}</span></div>` : ''}
+            <div class="info-row"><strong>Subjekti:</strong> <span>${data.subject || 'Pa subjekt'}</span></div>
+            <div class="info-row"><strong>Data & Koha:</strong> <span>${data.timestamp || new Date().toLocaleString('sq-AL')}</span></div>
+            ${data.propertyId ? `<div class="info-row"><strong>Pronë Reference:</strong> <span>${data.propertyTitle || data.propertyId}</span></div>` : ''}
+          </div>
+
+          <div style="background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 18px; margin: 20px 0;">
+            <div style="font-weight: 700; color: #0B192C; font-size: 13px; margin-bottom: 8px;">Përmbajtja e Plotë e Mesazhit:</div>
+            <div style="color: #334155; font-size: 14px; line-height: 1.6; white-space: pre-wrap;">${data.message}</div>
+          </div>
+
+          <a href="${adminUrl}" class="cta-btn">Hap Panelin e Administratorit</a>
+        `, `Mesazh i ri nga ${data.name}: ${data.subject || ''}`);
+        return { subject, html };
+      }
+
+      case 'admin_support_request': {
+        const ref = data.referenceId || `REF-${Date.now().toString().slice(-6)}`;
+        const subject = `🆘 [PronaX Mbështetje ${ref}] ${data.category || 'Kërkesë e përgjithshme'} – ${data.name || 'Përdorues'}`;
+        const adminUrl = `${baseUrl}/admin/dashboard?tab=mbeshtetja`;
+        const html = wrapEmail(`
+          <div style="border-bottom: 2px solid #2563eb; padding-bottom: 12px; margin-bottom: 20px;">
+            <span style="background-color: #eff6ff; color: #2563eb; font-size: 11px; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase;">
+              Kërkesë Mbështetjeje #${ref}
+            </span>
+            <h1 style="color: #0B192C; font-size: 20px; font-weight: 800; margin: 8px 0 0 0;">Tiketë e Re Mbështetjeje</h1>
+          </div>
+
+          <div class="info-card">
+            <div class="info-row"><strong>Numri Referencës:</strong> <span>${ref}</span></div>
+            <div class="info-row"><strong>Përdoruesi:</strong> <span>${data.name}</span></div>
+            <div class="info-row"><strong>Email-i i Regjistruar:</strong> <a href="mailto:${data.email}">${data.email}</a></div>
+            <div class="info-row"><strong>Kategoria:</strong> <span>${data.category}</span></div>
+            <div class="info-row"><strong>Urgjenca:</strong> <span style="font-weight: bold; color: ${data.urgency === 'high' ? '#dc2626' : '#2563eb'};">${(data.urgency || 'normale').toUpperCase()}</span></div>
+            <div class="info-row"><strong>Koha e Dorëzimit:</strong> <span>${data.timestamp || new Date().toLocaleString('sq-AL')}</span></div>
+          </div>
+
+          <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; margin: 20px 0;">
+            <div style="font-weight: 700; color: #0B192C; font-size: 13px; margin-bottom: 8px;">Kërkesa e Plotë:</div>
+            <div style="color: #334155; font-size: 14px; line-height: 1.6; white-space: pre-wrap;">${data.request}</div>
+          </div>
+
+          <a href="${adminUrl}" class="cta-btn" style="background-color: #2563eb;">Shiko Tiketën në Panel</a>
+        `, `Kërkesë mbështetjeje nga ${data.name} [${ref}]`);
+        return { subject, html };
+      }
+
+      case 'admin_new_property': {
+        const isPending = data.requiresModeration === true;
+        const subject = isPending
+          ? `📋 [Moderim Pronë] "${data.title}" – ${data.municipality} (${data.price} €)`
+          : `🏡 [Pronë e Re] "${data.title}" – ${data.municipality} (${data.price} €)`;
+        const adminUrl = `${baseUrl}/admin/dashboard?tab=pronat`;
+        const html = wrapEmail(`
+          <div style="border-bottom: 2px solid ${isPending ? '#f59e0b' : '#059669'}; padding-bottom: 12px; margin-bottom: 20px;">
+            <span style="background-color: ${isPending ? '#fef3c7' : '#ecfdf5'}; color: ${isPending ? '#b45309' : '#059669'}; font-size: 11px; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase;">
+              ${isPending ? '⏳ Në Pritje të Moderimit' : '✅ Publikuar Menjëherë'}
+            </span>
+            <h1 style="color: #0B192C; font-size: 20px; font-weight: 800; margin: 8px 0 0 0;">Pronë e Re e Dorëzuar</h1>
+          </div>
+
+          <div class="info-card">
+            <div class="info-row"><strong>Titulli:</strong> <span>${data.title}</span></div>
+            <div class="info-row"><strong>Kategoria:</strong> <span>${data.category} (${data.listingType === 'qira' ? 'Me Qira' : 'Në Shitje'})</span></div>
+            <div class="info-row"><strong>Komuna:</strong> <span>${data.municipality}</span></div>
+            <div class="info-row"><strong>Çmimi i Shpallur:</strong> <span style="font-weight: 800; color: #059669;">${data.price} €</span></div>
+            <div class="info-row"><strong>Plani i Zgjedhur:</strong> <span>${data.planName || (data.planId === 'free' ? 'Falas (3 ditë)' : data.planId)}</span></div>
+            <div class="info-row"><strong>Email i Pronarit:</strong> <a href="mailto:${data.ownerEmail}">${data.ownerEmail}</a></div>
+            <div class="info-row"><strong>Telefoni:</strong> <span>${data.ownerPhone || '—'}</span></div>
+            <div class="info-row"><strong>Data e Dorëzimit:</strong> <span>${data.timestamp || new Date().toLocaleString('sq-AL')}</span></div>
+          </div>
+
+          ${isPending ? `
+            <div style="background-color: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 12px; margin: 16px 0; color: #92400e; font-size: 13px;">
+              ⚠️ Kjo pronë kërkon aprovimin tuaj para se të shfaqet publikisht në faqe dhe hartë.
+            </div>
+          ` : ''}
+
+          <a href="${adminUrl}" class="cta-btn">Shqyrto Pronën në Panel</a>
+        `, `Pronë e re: ${data.title} në ${data.municipality}`);
+        return { subject, html };
+      }
+
+      case 'admin_payment_event': {
+        const isSuccess = data.status === 'successful';
+        const subject = isSuccess
+          ? `💰 [Pagesë e Konfirmuar] ${data.amount} ${data.currency || 'EUR'} – Plani ${data.planName || data.plan}`
+          : `⚠️ [Problem Pagese] ${data.status} – ${data.paymentId || 'Ref'}`;
+        const adminUrl = `${baseUrl}/admin/pagesat`;
+        const html = wrapEmail(`
+          <div style="border-bottom: 2px solid ${isSuccess ? '#059669' : '#dc2626'}; padding-bottom: 12px; margin-bottom: 20px;">
+            <span style="background-color: ${isSuccess ? '#ecfdf5' : '#fef2f2'}; color: ${isSuccess ? '#059669' : '#dc2626'}; font-size: 11px; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase;">
+              ${isSuccess ? 'Transaksion i Suksesshëm' : `Statusi: ${data.status}`}
+            </span>
+            <h1 style="color: #0B192C; font-size: 20px; font-weight: 800; margin: 8px 0 0 0;">Njoftim Pagese në PronaX</h1>
+          </div>
+
+          <div class="info-card">
+            <div class="info-row"><strong>Referenca e Pagesës:</strong> <span>${data.paymentId}</span></div>
+            <div class="info-row"><strong>Shuma & Monedha:</strong> <span style="font-weight: 800; font-size: 16px; color: ${isSuccess ? '#059669' : '#dc2626'};">${data.amount} ${data.currency || 'EUR'}</span></div>
+            <div class="info-row"><strong>Plani:</strong> <span>${data.planName || data.plan} (${data.durationDays || '—'} ditë)</span></div>
+            <div class="info-row"><strong>Prona:</strong> <span>${data.propertyTitle || data.propertyId}</span></div>
+            <div class="info-row"><strong>Ofruesi i Pagesës:</strong> <span>${data.provider || 'Sistemi'}</span></div>
+            <div class="info-row"><strong>Email i Përdoruesit:</strong> <span>${data.userEmail || '—'}</span></div>
+            <div class="info-row"><strong>Koha e Verifikimit:</strong> <span>${data.timestamp || new Date().toLocaleString('sq-AL')}</span></div>
+          </div>
+
+          <a href="${adminUrl}" class="cta-btn" style="background-color: ${isSuccess ? '#059669' : '#dc2626'};">Shiko Regjistrin e Pagesave</a>
+        `, `Pagesë PronaX: ${data.amount} EUR (${data.status})`);
+        return { subject, html };
+      }
+
+      case 'admin_security_alert': {
+        const subject = `🚨 [URGJENTE Siguri] ${data.title || 'Alert i ri i sigurisë në PronaX'}`;
+        const adminUrl = `${baseUrl}/admin/ai`;
+        const html = wrapEmail(`
+          <div style="border-bottom: 2px solid #dc2626; padding-bottom: 12px; margin-bottom: 20px;">
+            <span style="background-color: #fef2f2; color: #dc2626; font-size: 11px; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase;">
+              Niveli: ${(data.severity || 'high').toUpperCase()}
+            </span>
+            <h1 style="color: #dc2626; font-size: 20px; font-weight: 800; margin: 8px 0 0 0;">Alert Sigurie dhe Mashtrimi</h1>
+          </div>
+
+          <div class="info-card" style="border-left: 4px solid #dc2626;">
+            <div class="info-row"><strong>Lloji i Incidentit:</strong> <span>${data.title}</span></div>
+            <div class="info-row"><strong>Koha:</strong> <span>${data.timestamp || new Date().toLocaleString('sq-AL')}</span></div>
+            ${data.affectedEmail ? `<div class="info-row"><strong>Llogaria e Prekur:</strong> <span>${data.affectedEmail}</span></div>` : ''}
+            ${data.ip ? `<div class="info-row"><strong>Adresa IP:</strong> <span>${data.ip}</span></div>` : ''}
+          </div>
+
+          <div style="background-color: #fff1f2; border: 1px solid #fecdd3; border-radius: 10px; padding: 14px; margin: 16px 0; color: #9f1239; font-size: 13px;">
+            <strong>Detajet Teknike:</strong>
+            <div style="margin-top: 6px; white-space: pre-wrap;">${data.details}</div>
+          </div>
+
+          <a href="${adminUrl}" class="cta-btn" style="background-color: #dc2626;">Hap Qendrën e Sigurisë & AI</a>
+        `, `Alert Sigurie: ${data.title}`);
+        return { subject, html };
+      }
+
+      case 'admin_platform_digest': {
+        const subject = `📊 [PronaX Digest] Përmbledhja Ditore e Platformës – ${new Date().toLocaleDateString('sq-AL')}`;
+        const html = wrapEmail(`
+          <h1>Përmbledhja Ditore e Platformës PronaX</h1>
+          <p>Kjo është përmbledhja automatike e aktiviteteve dhe statusit të sistemit:</p>
+          <div class="info-card">
+            <div class="info-row"><strong>Prona që skadojnë së shpejti:</strong> <span>${data.expiringSoon || 0}</span></div>
+            <div class="info-row"><strong>Prona të skaduara sot:</strong> <span>${data.expiredToday || 0}</span></div>
+            <div class="info-row"><strong>Regjistrime të reja:</strong> <span>${data.newRegistrations || 0}</span></div>
+            <div class="info-row"><strong>Kërkesa mbështetjeje të hapura:</strong> <span>${data.pendingSupport || 0}</span></div>
+            <div class="info-row"><strong>Detyra moderimi në pritje:</strong> <span>${data.pendingModeration || 0}</span></div>
+          </div>
+          <a href="${baseUrl}/admin/dashboard" class="cta-btn">Hap Panelin Kryesor</a>
+        `, 'Përmbledhja Ditore e PronaX');
+        return { subject, html };
+      }
+
+      case 'admin_test_email': {
+        const subject = `🧪 [PronaX Test] Email Testues i Konfirmuar – ${new Date().toLocaleTimeString('sq-AL')}`;
+        const html = wrapEmail(`
+          <div style="text-align: center; margin-bottom: 20px;">
+            <div style="display: inline-block; width: 48px; height: 48px; line-height: 48px; border-radius: 14px; background-color: #ecfdf5; color: #059669; font-size: 24px; font-weight: bold; margin-bottom: 12px;">
+              ✓
+            </div>
+            <h1 style="color: #0B192C; font-size: 20px; font-weight: 800;">Email Testues i Suksesshëm!</h1>
+            <p style="color: #64748b; font-size: 14px;">Ky email konfirmon që lidhja me kutinë e administratorit (${data.adminEmail || 'pronaxestate@outlook.com'}) funksionon me sukses.</p>
+          </div>
+
+          <div class="info-card">
+            <div class="info-row"><strong>Ofruesi Aktiv:</strong> <span>${data.provider || 'Konfiguruar'}</span></div>
+            <div class="info-row"><strong>Dërguar Më:</strong> <span>${new Date().toLocaleString('sq-AL')}</span></div>
+            <div class="info-row"><strong>Serveri:</strong> <span>PronaX Production (Render.com)</span></div>
+          </div>
+        `, 'Email Testues i PronaX');
+        return { subject, html };
+      }
     }
   }
 }

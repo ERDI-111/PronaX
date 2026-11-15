@@ -24,6 +24,8 @@ import {
   NotificationRetentionAgent,
   MarketInsightsAgent,
   RecommendationAgent,
+  AuthVerificationAgent,
+  AdminNotificationAgent,
 } from './agents';
 
 export class AIOrchestrator {
@@ -324,6 +326,14 @@ export class AIOrchestrator {
 
       case 'admin_assistant':
         return AdminAssistantAgent.answerQuery(query);
+
+      case 'auth_verification':
+        return AuthVerificationAgent.answerTroubleshootingQuery(query, language);
+
+      case 'admin_notification':
+        return AdminNotificationAgent.ADMIN_EMAIL
+          ? `Agjenti i Menaxhimit të Email-eve është aktiv. Të gjitha njoftimet drejtohen te: ${AdminNotificationAgent.ADMIN_EMAIL}`
+          : 'Agjenti i njoftimeve administrative është aktiv.';
 
       default:
         return language === 'sq'

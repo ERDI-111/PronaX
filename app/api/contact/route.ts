@@ -3,6 +3,7 @@ import { SecuritySanitizer } from '@/lib/security/sanitize';
 import { RateLimiter } from '@/lib/security/rate-limiter';
 import { MessageStore } from '@/lib/messages/store';
 import { EmailService } from '@/lib/email/service';
+import { AdminNotificationAgent } from '@/lib/ai/agents/admin-notification';
 
 const ADMIN_EMAIL = 'pronaxestate@outlook.com';
 
@@ -50,13 +51,16 @@ export async function POST(req: NextRequest) {
       recipient_email: targetRecipient,
     });
 
-    // 2. Send Email Notification to Admin (pronaxestate@outlook.com)
+    // 2. Delegate to Agent 10 (Email Management & Admin Notification Agent)
     try {
-      await EmailService.sendNewMessageEmail({
-        to: ADMIN_EMAIL,
-        propertyTitle: cleanPropertyTitle || cleanSubject,
-        senderName: `${cleanName} (${cleanEmail}${cleanPhone ? `, Tel: ${cleanPhone}` : ''})`,
-        messagePreview: cleanMessage,
+      await AdminNotificationAgent.notifyContactFormSubmitted({
+        name: cleanName,
+        email: cleanEmail,
+        phone: cleanPhone,
+        subject: cleanSubject,
+        message: cleanMessage,
+        propertyId: cleanPropertyId,
+        propertyTitle: cleanPropertyTitle,
       });
 
       // If this is an inquiry for a property owner different from admin, also send to owner
@@ -69,7 +73,7 @@ export async function POST(req: NextRequest) {
         });
       }
     } catch (emailErr) {
-      console.warn('Email delivery failed or in preview mode:', emailErr);
+      console.warn('[Agent 10] Email delivery warning:', emailErr);
     }
 
     return NextResponse.json({

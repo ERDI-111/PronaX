@@ -8,10 +8,10 @@ import {
   LayoutDashboard, Building2, Users, ShieldCheck, CreditCard,
   TrendingUp, Clock, AlertTriangle, CheckCircle2, XCircle,
   Eye, BarChart3, ArrowRight, Settings, Activity,
-  Euro, Flag, Database, RefreshCw
+  Euro, Flag, Database, RefreshCw, Mail, Send, Inbox, RotateCw
 } from 'lucide-react';
 
-type AdminTab = 'overview' | 'pronat' | 'perdoruesit' | 'agjencite' | 'pagesat';
+type AdminTab = 'overview' | 'pronat' | 'perdoruesit' | 'agjencite' | 'pagesat' | 'emailet';
 
 interface DashboardStats {
   totalProperties: number;
@@ -90,6 +90,84 @@ export default function AdminDashboardPage() {
   const [dbOffline, setDbOffline] = useState(false);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
+  // Email Management state (Agents 9 & 10)
+  const [emailData, setEmailData] = useState<{
+    adminEmail: string;
+    activeProvider: string;
+    stats: {
+      totalSent: number;
+      delivered: number;
+      simulated: number;
+      failed: number;
+      pendingQueue: number;
+    };
+    queue: any[];
+    logs: any[];
+  } | null>(null);
+  const [emailSendingTest, setEmailSendingTest] = useState(false);
+  const [emailStatusMsg, setEmailStatusMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [retryingEmailId, setRetryingEmailId] = useState<string | null>(null);
+
+  const fetchEmailData = async () => {
+    try {
+      const res = await fetch('/api/admin/emails');
+      if (res.ok) {
+        const data = await res.json();
+        setEmailData(data);
+      }
+    } catch (err) {
+      console.error('Failed to load email logs:', err);
+    }
+  };
+
+  const handleSendTestEmail = async () => {
+    setEmailSendingTest(true);
+    setEmailStatusMsg(null);
+    try {
+      const res = await fetch('/api/admin/emails', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'send_test' }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setEmailStatusMsg({
+          type: 'success',
+          text: `Email-i testues u dërgua me sukses te pronaxestate@outlook.com! (Ofruesi: ${data.provider}${data.simulated ? ' - Simuluar' : ''})`,
+        });
+        await fetchEmailData();
+      } else {
+        setEmailStatusMsg({
+          type: 'error',
+          text: `Dështoi dërgimi: ${data.error || 'Gabim i panjohur'}`,
+        });
+      }
+    } catch (err: any) {
+      setEmailStatusMsg({ type: 'error', text: `Gabim rrjeti: ${err.message}` });
+    } finally {
+      setEmailSendingTest(false);
+    }
+  };
+
+  const handleRetryEmail = async (id: string) => {
+    setRetryingEmailId(id);
+    try {
+      const res = await fetch('/api/admin/emails', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'retry', emailId: id }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        await fetchEmailData();
+      }
+    } catch (err) {
+      console.error('Retry failed:', err);
+    } finally {
+      setRetryingEmailId(null);
+    }
+  };
+
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
@@ -115,6 +193,7 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     fetchDashboardData();
+    fetchEmailData();
   }, []);
 
   const tabs = [
@@ -123,6 +202,7 @@ export default function AdminDashboardPage() {
     { id: 'perdoruesit' as AdminTab, label: 'Përdoruesit', icon: Users },
     { id: 'agjencite' as AdminTab, label: 'Agjencitë', icon: ShieldCheck, badge: pendingAgencies.length },
     { id: 'pagesat' as AdminTab, label: 'Transaksionet', icon: CreditCard },
+    { id: 'emailet' as AdminTab, label: 'Menaxhimi i Email-eve', icon: Mail, badge: emailData?.stats?.failed ? emailData.stats.failed : undefined },
   ];
 
   const handlePropertyAction = (id: string, action: 'approved' | 'rejected') => {
@@ -658,6 +738,209 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* =============================== EMAIL MANAGEMENT (AGENTS 9 & 10) =============================== */}
+        {!loading && activeTab === 'emailet' && (
+          <div className="space-y-6">
+            {/* Top Control Card */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <h2 className="text-lg font-black text-slate-900">Menaxhimi i Email-eve & Njoftimeve të Administratorit</h2>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Koordinuar nga <span className="font-bold text-slate-700">Agent 9 (Auth & 2FA)</span> dhe <span className="font-bold text-slate-700">Agent 10 (Admin Notifications)</span>.
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2 mt-3">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-200 rounded-lg text-xs font-semibold text-emerald-800">
+                      <Mail className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Adresa e Administratorit: <strong>pronaxestate@outlook.com</strong></span>
+                    </div>
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 border border-blue-200 rounded-lg text-xs font-semibold text-blue-800">
+                      <Activity className="w-3.5 h-3.5 text-blue-600" />
+                      <span>Ofruesi Aktiv: <strong>{emailData?.activeProvider?.toUpperCase() || 'SIMULATED'}</strong></span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    onClick={handleSendTestEmail}
+                    disabled={emailSendingTest}
+                    className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-2 disabled:opacity-50"
+                  >
+                    <Send className={`w-3.5 h-3.5 ${emailSendingTest ? 'animate-bounce' : ''}`} />
+                    <span>{emailSendingTest ? 'Duke dërguar...' : 'Dërgo Email Testues'}</span>
+                  </button>
+                  <button
+                    onClick={fetchEmailData}
+                    className="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
+                  >
+                    <RotateCw className="w-3.5 h-3.5" />
+                    <span>Rifresko</span>
+                  </button>
+                </div>
+              </div>
+
+              {emailStatusMsg && (
+                <div className={`mt-4 p-3.5 rounded-xl border text-xs font-medium flex items-center gap-2 ${
+                  emailStatusMsg.type === 'success'
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                    : 'bg-rose-50 border-rose-200 text-rose-800'
+                }`}>
+                  {emailStatusMsg.type === 'success' ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  ) : (
+                    <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                  )}
+                  <span>{emailStatusMsg.text}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Email KPI Metrics */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
+                <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center mb-3">
+                  <Mail className="w-4 h-4 text-slate-700" />
+                </div>
+                <div className="text-2xl font-black text-slate-900">{emailData?.stats?.totalSent || 0}</div>
+                <div className="text-xs font-semibold text-slate-500 mt-0.5">Gjithsej Email-e të Dërguara</div>
+              </div>
+
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center mb-3">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                </div>
+                <div className="text-2xl font-black text-emerald-700">
+                  {(emailData?.stats?.delivered || 0) + (emailData?.stats?.simulated || 0)}
+                </div>
+                <div className="text-xs font-semibold text-slate-500 mt-0.5">Të Dorëzuara me Sukses</div>
+              </div>
+
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
+                <div className="w-9 h-9 rounded-xl bg-rose-50 flex items-center justify-center mb-3">
+                  <XCircle className="w-4 h-4 text-rose-600" />
+                </div>
+                <div className="text-2xl font-black text-rose-600">{emailData?.stats?.failed || 0}</div>
+                <div className="text-xs font-semibold text-slate-500 mt-0.5">Dështime në Dërgim</div>
+              </div>
+
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
+                <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center mb-3">
+                  <Clock className="w-4 h-4 text-amber-600" />
+                </div>
+                <div className="text-2xl font-black text-amber-600">{emailData?.stats?.pendingQueue || 0}</div>
+                <div className="text-xs font-semibold text-slate-500 mt-0.5">Në Radhë (Queue)</div>
+              </div>
+            </div>
+
+            {/* Email Delivery Logs Table */}
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                  <h3 className="font-bold text-slate-900 text-sm">Regjistri i Dërgimit të Email-eve (Delivery Logs)</h3>
+                  <p className="text-[11px] text-slate-500">Historiku i plotë i mesazheve të dërguara nga PronaX, përfshirë OTP-të dhe njoftimet administrative.</p>
+                </div>
+                <span className="text-xs text-slate-500 font-semibold">
+                  {emailData?.logs?.length || 0} regjistrime
+                </span>
+              </div>
+
+              {(!emailData?.logs || emailData.logs.length === 0) ? (
+                <div className="text-center py-12 text-slate-400">
+                  <Mail className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-xs">Nuk ka ende email-e të regjistruara në sistem.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50 border-b border-slate-100 text-slate-500 font-semibold">
+                      <tr>
+                        <th className="px-5 py-3">Koha</th>
+                        <th className="px-5 py-3">Marrësi</th>
+                        <th className="px-5 py-3">Subjekti</th>
+                        <th className="px-5 py-3">Lloji</th>
+                        <th className="px-5 py-3">Ofruesi</th>
+                        <th className="px-5 py-3 text-center">Statusi</th>
+                        <th className="px-5 py-3 text-right">Veprime</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {emailData.logs.map((log: any) => (
+                        <tr key={log.id} className="hover:bg-slate-50/70 transition-colors">
+                          <td className="px-5 py-3 text-slate-500 whitespace-nowrap">
+                            {new Date(log.timestamp).toLocaleTimeString('sq-AL', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              second: '2-digit',
+                            })}
+                          </td>
+                          <td className="px-5 py-3 font-semibold text-slate-900 whitespace-nowrap">
+                            {log.to}
+                          </td>
+                          <td className="px-5 py-3 text-slate-700 max-w-xs truncate" title={log.subject}>
+                            {log.subject}
+                          </td>
+                          <td className="px-5 py-3">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-700">
+                              {log.templateType || 'general'}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3 text-slate-500 font-mono text-[11px]">
+                            {log.provider}
+                          </td>
+                          <td className="px-5 py-3 text-center">
+                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                              log.status === 'delivered'
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : log.status === 'simulated'
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-rose-100 text-rose-800'
+                            }`}>
+                              {log.status === 'delivered' ? '✓ Dorëzuar' : log.status === 'simulated' ? 'ℹ Simuluar' : '✗ Dështuar'}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3 text-right">
+                            {log.status === 'failed' ? (
+                              <button
+                                onClick={() => handleRetryEmail(log.id)}
+                                disabled={retryingEmailId === log.id}
+                                className="px-2.5 py-1 bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 rounded-lg text-[11px] font-bold transition-all disabled:opacity-50"
+                              >
+                                {retryingEmailId === log.id ? 'Duke riprovuar...' : 'Riprovo'}
+                              </button>
+                            ) : (
+                              <span className="text-slate-400 text-[11px]">—</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* Inbound Assistant Card (Agent 10) */}
+            <div className="bg-slate-900 text-white rounded-2xl p-6 shadow-md border border-slate-800">
+              <div className="flex items-center gap-2 mb-2">
+                <Inbox className="w-5 h-5 text-emerald-400" />
+                <h3 className="font-bold text-sm">Menaxhimi i Email-eve Hyrëse (Agent 10 — Inbound Assistant)</h3>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed max-w-3xl">
+                Kur autorizohet me Microsoft Graph API, Agent 10 analizon mesazhet hyrëse në <code>pronaxestate@outlook.com</code>:
+                zbulon automatikisht tentativat spam, kategorizon kërkesat (Mbështetje, Ankesa, Bashkëpunim), sinjalizon rastet urgjente dhe përgatit drafte përgjigjesh në shqip dhe anglisht.
+              </p>
+              <div className="mt-4 pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+                <span className="text-emerald-400 font-medium">✓ Rregull i rreptë sigurie: Asnjë email nuk fshihet apo dërgohet automatikisht pa autorizimin e administratorit.</span>
+                <span className="font-mono text-[11px]">pronaxestate@outlook.com</span>
+              </div>
+            </div>
           </div>
         )}
       </main>
