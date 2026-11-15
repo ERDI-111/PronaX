@@ -80,7 +80,7 @@ export default function KosovoInteractiveMap({
   const userLocationMarkerRef = useRef<L.Marker | null>(null);
 
   const [currentZoom, setCurrentZoom] = useState(DEFAULT_ZOOM);
-  const [mapStyle, setMapStyle] = useState<'standard' | 'voyager'>('standard');
+  const [mapStyle, setMapStyle] = useState<'google_streets' | 'google_satellite' | 'google_terrain'>('google_streets');
   const [gpsLoading, setGpsLoading] = useState(false);
   const [gpsError, setGpsError] = useState<string | null>(null);
 
@@ -92,18 +92,19 @@ export default function KosovoInteractiveMap({
       center: KOSOVO_CENTER,
       zoom: DEFAULT_ZOOM,
       minZoom: 8,
-      maxZoom: 18,
+      maxZoom: 20,
       maxBounds: KOSOVO_BOUNDS,
       maxBoundsViscosity: 0.8,
       zoomControl: false, // Custom controls used instead
     });
 
-    // Primary Geographic Tile Layer - OpenStreetMap (Kosovo cities, relief, roads)
+    // Primary Geographic Tile Layer - Google Maps Roadmap (Exact Google Maps view requested)
     L.tileLayer(
-      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      'https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
       {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 19,
+        attribution: '&copy; Google Maps',
+        subdomains: ['0', '1', '2', '3'],
+        maxZoom: 20,
       }
     ).addTo(map);
 
@@ -136,7 +137,7 @@ export default function KosovoInteractiveMap({
     };
   }, []);
 
-  // Switch map tiles when mapStyle changes
+  // Switch map tiles when mapStyle changes (Google Maps: Streets, Satellite, Terrain)
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -147,18 +148,17 @@ export default function KosovoInteractiveMap({
       }
     });
 
-    const url = mapStyle === 'voyager'
-      ? 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
-      : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-
-    const attribution = mapStyle === 'voyager'
-      ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-      : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+    let url = 'https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}';
+    if (mapStyle === 'google_satellite') {
+      url = 'https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}';
+    } else if (mapStyle === 'google_terrain') {
+      url = 'https://mt{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}';
+    }
 
     L.tileLayer(url, {
-      attribution,
-      subdomains: mapStyle === 'voyager' ? 'abcd' : 'abc',
-      maxZoom: 19,
+      attribution: '&copy; Google Maps',
+      subdomains: ['0', '1', '2', '3'],
+      maxZoom: 20,
     }).addTo(map);
 
     // Re-draw or ensure markers stay on top
@@ -448,27 +448,37 @@ export default function KosovoInteractiveMap({
 
       {/* Map Floating Controls Top Right */}
       <div className="absolute top-4 right-4 z-[900] flex flex-col gap-2">
-        {/* Style toggle (Voyager / OSM) */}
-        <div className="bg-white/95 backdrop-blur-md rounded-2xl p-1 shadow-lg border border-slate-200/80 flex items-center">
+        {/* Style toggle (Google Maps: Rrugët / Satelit / Terren) */}
+        <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl p-1 shadow-lg border border-slate-200/80 dark:border-slate-800 flex items-center">
           <button
-            onClick={() => setMapStyle('voyager')}
+            onClick={() => setMapStyle('google_streets')}
             className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all ${
-              mapStyle === 'voyager'
-                ? 'bg-[#0B192C] text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-900'
+              mapStyle === 'google_streets'
+                ? 'bg-emerald-600 text-white shadow-sm'
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            Harta e Pastër
+            Google Maps
           </button>
           <button
-            onClick={() => setMapStyle('standard')}
+            onClick={() => setMapStyle('google_satellite')}
             className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all ${
-              mapStyle === 'standard'
-                ? 'bg-[#0B192C] text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-900'
+              mapStyle === 'google_satellite'
+                ? 'bg-emerald-600 text-white shadow-sm'
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            OpenStreetMap
+            Satelit
+          </button>
+          <button
+            onClick={() => setMapStyle('google_terrain')}
+            className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all ${
+              mapStyle === 'google_terrain'
+                ? 'bg-emerald-600 text-white shadow-sm'
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            Reliev
           </button>
         </div>
 
