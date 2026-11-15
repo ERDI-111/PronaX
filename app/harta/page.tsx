@@ -228,7 +228,7 @@ export default function KosovoMapPage() {
       {/* Main Map Content View: Full Height Layout */}
       <div className="flex-1 relative flex flex-col lg:flex-row h-[calc(100vh-145px)] overflow-hidden">
         {/* Real Geographical Map Component */}
-        <div className="flex-1 relative w-full h-full">
+        <div className="flex-1 relative w-full h-full min-h-[550px]">
           <KosovoInteractiveMap
             properties={displayProperties}
             selectedProperty={selectedProperty}

@@ -59,6 +59,12 @@ export default function RootLayout({
   return (
     <html lang="sq" className="h-full antialiased" suppressHydrationWarning>
       <head>
+        {/* Leaflet CSS - Guarantees map tiles position and render properly across all browsers */}
+        <link
+          rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          crossOrigin=""
+        />
         {/* Prevent flash of wrong theme */}
         <script
           dangerouslySetInnerHTML={{
