@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { VerificationService } from '@/lib/auth/verification';
+import { UserStore } from '@/lib/auth/user-store';
 
 export async function POST(req: NextRequest) {
   try {
@@ -67,17 +68,25 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const userRecord = UserStore.findByEmail(normalizedEmail);
+    const userPayload = {
+      email: normalizedEmail,
+      fullName: userRecord?.fullName || normalizedEmail.split('@')[0],
+      role: userRecord?.role || (normalizedEmail === 'pronaxestate@outlook.com' ? 'admin' : 'user'),
+    };
+
     const response = NextResponse.json({
       success: true,
       message: 'Verifikimi u krye me sukses! Po ridrejtoheni...',
       email: normalizedEmail,
+      user: userPayload,
       sessionCreated: !!supabaseSession,
     });
 
     // Set a lightweight verification cookie to confirm 2FA completed
     response.cookies.set('pronax_verified_login', normalizedEmail, {
       path: '/',
-      httpOnly: true,
+      httpOnly: false,
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 days
     });

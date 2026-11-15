@@ -36,7 +36,20 @@ export default function MyPropertiesPage() {
 
   const fetchProperties = async () => {
     try {
-      const res = await fetch('/api/properties/my-properties?userId=user-erdis-001');
+      let emailParam = '';
+      try {
+        const raw = localStorage.getItem('pronax_user');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed.email) emailParam = parsed.email;
+        }
+      } catch {}
+
+      const url = emailParam
+        ? `/api/properties/my-properties?userId=user-erdis-001&email=${encodeURIComponent(emailParam)}`
+        : '/api/properties/my-properties?userId=user-erdis-001';
+
+      const res = await fetch(url);
       const data = await res.json();
       if (data.success) {
         setProperties(data.properties);

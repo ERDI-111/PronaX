@@ -5,7 +5,13 @@ import { ExpirationService } from '@/lib/expiration/service';
 export async function GET(req: NextRequest) {
   try {
     const userId = req.nextUrl.searchParams.get('userId') || 'user-erdis-001';
-    const properties = await PaymentStore.getUserProperties(userId);
+    const email = req.nextUrl.searchParams.get('email');
+    const allProps = await PaymentStore.getAllProperties();
+    const properties = allProps.filter((p) => {
+      if (p.owner_id === userId) return true;
+      if (email && ((p as any).seller_email?.toLowerCase() === email.toLowerCase() || p.owner_id?.toLowerCase() === email.toLowerCase())) return true;
+      return false;
+    });
 
     const enhanced = properties.map((prop) => {
       const expirationInfo = ExpirationService.calculateDaysRemaining(prop.expires_at);

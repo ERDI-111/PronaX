@@ -191,7 +191,13 @@ function LoginForm() {
 
       setSuccessMessage('Kodi u verifikua me sukses! Po kyçeni...');
       try {
-        localStorage.setItem('pronax_user', JSON.stringify({ email: email.toLowerCase().trim() }));
+        const payload = data.user || {
+          email: email.toLowerCase().trim(),
+          fullName: email.split('@')[0],
+          role: email.toLowerCase().trim() === 'pronaxestate@outlook.com' ? 'admin' : 'user',
+        };
+        localStorage.setItem('pronax_user', JSON.stringify(payload));
+        window.dispatchEvent(new Event('pronax_auth_change'));
       } catch {}
 
       // Admin auto-redirect
@@ -291,7 +297,7 @@ function LoginForm() {
             {/* Google Sign-in Option */}
             <div className="mb-6">
               <Link
-                href={`/api/auth/google?redirectTo=${encodeURIComponent(redirectTo)}`}
+                href={`/api/auth/google?email=${encodeURIComponent(email || '')}&redirectTo=${encodeURIComponent(redirectTo)}`}
                 className="w-full py-3 px-4 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600/80 text-slate-800 dark:text-white font-bold rounded-2xl shadow-xs transition-all text-xs flex items-center justify-center gap-3 group hover:border-slate-400"
               >
                 <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
