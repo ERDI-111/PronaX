@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { UserStore } from '@/lib/auth/user-store';
+import { getPublicBaseUrl } from '@/lib/utils/url';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const code = searchParams.get('code');
   const stateRaw = searchParams.get('state');
+  const baseUrl = getPublicBaseUrl(req);
 
   let redirectTo = '/';
   if (stateRaw) {
@@ -15,26 +17,22 @@ export async function GET(req: NextRequest) {
   }
 
   if (!code) {
-    return NextResponse.redirect(
-      new URL(`/kycu?error=${encodeURIComponent('Autorizimi me Google u refuzua ose u anulua.')}`, req.url)
-    );
+    const errTarget = new URL('/kycu', baseUrl);
+    errTarget.searchParams.set('error', 'Autorizimi me Google u refuzua ose u anulua.');
+    return NextResponse.redirect(errTarget.toString());
   }
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
   if (!clientId || !clientSecret) {
-    return NextResponse.redirect(
-      new URL(
-        `/kycu?error=${encodeURIComponent('Mungon GOOGLE_CLIENT_ID ose GOOGLE_CLIENT_SECRET në konfigurim.')}`,
-        req.url
-      )
-    );
+    const errTarget = new URL('/kycu', baseUrl);
+    errTarget.searchParams.set('error', 'Mungon GOOGLE_CLIENT_ID ose GOOGLE_CLIENT_SECRET në konfigurim.');
+    return NextResponse.redirect(errTarget.toString());
   }
 
   try {
-    const origin = req.nextUrl.origin;
-    const redirectUri = `${origin}/api/auth/callback/google`;
+    const redirectUri = `${baseUrl}/api/auth/callback/google`;
 
     // 1. Exchange auth code for tokens
     const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
@@ -52,9 +50,9 @@ export async function GET(req: NextRequest) {
     const tokenData = await tokenRes.json();
     if (!tokenRes.ok || !tokenData.access_token) {
       console.error('Google token exchange error:', tokenData);
-      return NextResponse.redirect(
-        new URL(`/kycu?error=${encodeURIComponent('Dështoi vërtetimi i kodit me Google.')}`, req.url)
-      );
+      const errTarget = new URL('/kycu', baseUrl);
+      errTarget.searchParams.set('error', 'Dështoi vërtetimi i kodit me Google.');
+      return NextResponse.redirect(errTarget.toString());
     }
 
     // 2. Fetch Google profile
@@ -64,9 +62,9 @@ export async function GET(req: NextRequest) {
     const profile = await userRes.json();
 
     if (!profile.email) {
-      return NextResponse.redirect(
-        new URL(`/kycu?error=${encodeURIComponent('Google nuk ktheu adresë email të vlefshme.')}`, req.url)
-      );
+      const errTarget = new URL('/kycu', baseUrl);
+      errTarget.searchParams.set('error', 'Google nuk ktheu adresë email të vlefshme.');
+      return NextResponse.redirect(errTarget.toString());
     }
 
     // 3. Upsert user in UserStore
@@ -128,11 +126,8 @@ export async function GET(req: NextRequest) {
     return response;
   } catch (err: any) {
     console.error('Google callback error:', err);
-    return NextResponse.redirect(
-      new URL(
-        `/kycu?error=${encodeURIComponent(err.message || 'Ndodhi një gabim gjatë kyçjes me Google.')}`,
-        req.url
-      )
-    );
+    const errTarget = new URL('/kycu', baseUrl);
+    errTarget.searchParams.set('error', err.message || 'Ndodhi një gabim gjatë kyçjes me Google.');
+    return NextResponse.redirect(errTarget.toString());
   }
 }

@@ -1,23 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getPublicBaseUrl } from '@/lib/utils/url';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const redirectTo = searchParams.get('redirectTo') || '/';
+  const baseUrl = getPublicBaseUrl(req);
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
   if (!clientId) {
-    return NextResponse.redirect(
-      new URL(
-        `/kycu?error=${encodeURIComponent(
-          'Google OAuth kërkon GOOGLE_CLIENT_ID te Variablat e Mjedisit në Render. Ndiqni udhëzuesin te Paneli Admin.'
-        )}`,
-        req.url
-      )
-    );
+    // Redirect cleanly to /kycu on the PUBLIC baseUrl (never localhost:10000!)
+    const target = new URL('/kycu', baseUrl);
+    target.searchParams.set('google_setup', 'true');
+    target.searchParams.set('redirectTo', redirectTo);
+    return NextResponse.redirect(target.toString());
   }
 
-  const origin = req.nextUrl.origin;
-  const redirectUri = `${origin}/api/auth/callback/google`;
+  const redirectUri = `${baseUrl}/api/auth/callback/google`;
   const state = Buffer.from(JSON.stringify({ redirectTo, ts: Date.now() })).toString('base64url');
 
   const googleUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');

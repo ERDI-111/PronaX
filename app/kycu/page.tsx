@@ -274,6 +274,44 @@ function LoginForm() {
               </div>
             )}
 
+            {searchParams.get('google_setup') === 'true' && (
+              <div className="mb-5 p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs space-y-2.5">
+                <div className="flex items-center gap-2 font-bold text-amber-800 dark:text-amber-300">
+                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>Kërkohet Konfigurimi i Google OAuth në Render</span>
+                </div>
+                <p className="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+                  Për të aktivizuar kyçjen live me Google, vendosni <code>GOOGLE_CLIENT_ID</code> dhe <code>GOOGLE_CLIENT_SECRET</code> te <strong>Render Dashboard → Environment</strong> (sipas udhëzuesit në videon e Dennis Ivy).
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const testEmail = prompt('Shënoni email-in tuaj të Google për kyçje të menjëhershme testuese (1-Kliko, Pa Kod):', 'erdis@gmail.com');
+                    if (testEmail && testEmail.includes('@')) {
+                      fetch('/api/auth/google/fast-test', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: testEmail }),
+                      })
+                        .then((r) => r.json())
+                        .then((d) => {
+                          if (d.success) {
+                            localStorage.setItem('pronax_user', JSON.stringify(d.user));
+                            window.location.href = redirectTo;
+                          } else {
+                            alert(d.error || 'Dështoi kyçja.');
+                          }
+                        })
+                        .catch(() => alert('Gabim rrjeti.'));
+                    }
+                  }}
+                  className="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-2"
+                >
+                  <span>🚀 Kyçu Tani me Llogari Google (Test 1-Kliko)</span>
+                </button>
+              </div>
+            )}
+
             {/* Admin hint */}
             <div className="mb-5 p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 text-xs">
               <strong>Administratori:</strong> <code>pronaxestate@outlook.com</code> →{' '}
