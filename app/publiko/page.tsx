@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useId, useRef } from 'react';
+import React, { useState, useEffect, useId, useRef } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -47,6 +48,41 @@ export default function PropertyPublishingWizard() {
   const [selectedPlanId, setSelectedPlanId] = useState<PricingPlanId>('monthly');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // User Authentication State
+  const [currentUser, setCurrentUser] = useState<{ email: string; name?: string } | null>(null);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  useEffect(() => {
+    try {
+      const rawUser = localStorage.getItem('pronax_user');
+      if (rawUser) {
+        const parsed = JSON.parse(rawUser);
+        if (parsed?.email) {
+          setCurrentUser(parsed);
+          setFormData((prev) => ({
+            ...prev,
+            seller_email: parsed.email,
+            seller_name: parsed.fullName || parsed.name || prev.seller_name,
+          }));
+        }
+      } else {
+        const hasCookie = typeof document !== 'undefined' && document.cookie.includes('pronax_verified_login');
+        if (hasCookie) {
+          const match = document.cookie.match(/pronax_verified_login=([^;]+)/);
+          if (match && match[1]) {
+            const userEmail = decodeURIComponent(match[1]);
+            setCurrentUser({ email: userEmail });
+            setFormData((prev) => ({ ...prev, seller_email: userEmail }));
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Auth verification check failed:', e);
+    } finally {
+      setCheckingAuth(false);
+    }
+  }, []);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -248,6 +284,10 @@ export default function PropertyPublishingWizard() {
     setError(null);
 
     try {
+      if (!currentUser) {
+        throw new Error('Duhet të jeni i kyçur në llogari për të publikuar shpalljen. Ju lutem kyçuni së pari.');
+      }
+
       // Validate mandatory fields
       if (!formData.title?.trim()) {
         setCurrentStep(3);
@@ -299,6 +339,51 @@ export default function PropertyPublishingWizard() {
     'Objekt industrial', 
     'Objekt komercial'
   ].includes(formData.property_type);
+
+  if (!checkingAuth && !currentUser) {
+    return (
+      <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+        <Header />
+
+        <main className="flex-1 max-w-lg w-full mx-auto px-4 py-16 flex items-center justify-center">
+          <div className="bg-white rounded-3xl p-8 sm:p-10 border border-slate-200/90 shadow-xl text-center space-y-6">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto shadow-inner">
+              <Lock className="w-8 h-8" />
+            </div>
+
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-[11px] font-bold text-amber-800 mb-3">
+                <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
+                <span>Kërkohet Llogari e Verifikuar</span>
+              </div>
+              <h1 className="text-2xl font-black text-[#0B192C]">Publikoni Pronën Tuaj</h1>
+              <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                Për të publikuar një shpallje në PronaX dhe për të menaxhuar njoftimet nga blerësit, ju lutem kyçuni në llogarinë tuaj ose regjistrohuni falas brenda 1 minute.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-3 pt-2">
+              <Link
+                href="/kycu?redirectTo=/publiko"
+                className="w-full py-3.5 px-5 rounded-2xl font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-md text-sm transition-all flex items-center justify-center gap-2"
+              >
+                <span>Kyçu në Llogari</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link
+                href="/regjistrohu"
+                className="w-full py-3.5 px-5 rounded-2xl font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 text-sm transition-all text-center"
+              >
+                Nuk keni llogari? Regjistrohu Falas
+              </Link>
+            </div>
+          </div>
+        </main>
+
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">

@@ -70,39 +70,35 @@ function RegisterContent() {
     setLoading(true);
 
     try {
-      const { createClient } = await import('@/lib/supabase/client');
-      const supabase = createClient();
-
-      const { data, error } = await supabase.auth.signUp({
-        email: form.email,
-        password: form.password,
-        options: {
-          data: {
-            full_name: `${form.emri} ${form.mbiemri}`,
-            phone: form.telefoni,
-            user_role: role === 'agjenci' ? 'agency' : 'user',
-            agency_name: role === 'agjenci' ? form.emriAgjencise : null,
-            arbk_license: role === 'agjenci' ? form.licencaArbk : null,
-            office_address: role === 'agjenci' ? form.adresa : null,
-            municipality: role === 'agjenci' ? form.komuna : null,
-          }
-        }
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          emri: form.emri,
+          mbiemri: form.mbiemri,
+          email: form.email,
+          telefoni: form.telefoni,
+          password: form.password,
+          role,
+          emriAgjencise: form.emriAgjencise,
+          licencaArbk: form.licencaArbk,
+          komuna: form.komuna,
+        }),
       });
 
-      if (error) {
-        setErrors({ general: error.message });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErrors({ general: data.error || 'Dështoi regjistrimi. Ju lutem provoni përsëri.' });
         setLoading(false);
         return;
       }
 
       setLoading(false);
       setStep('success');
-    } catch {
-      // Graceful degradation when Supabase is in demo mode
-      setTimeout(() => {
-        setLoading(false);
-        setStep('success');
-      }, 800);
+    } catch (err: any) {
+      setErrors({ general: err.message || 'Ndodhi një gabim gjatë regjistrimit.' });
+      setLoading(false);
     }
   };
 

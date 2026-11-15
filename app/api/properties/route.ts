@@ -3,6 +3,7 @@ import { PaymentStore } from '@/lib/payments/store';
 import { PropertySummary } from '@/lib/payments/types';
 import { SecuritySanitizer } from '@/lib/security/sanitize';
 import { AdminNotificationAgent } from '@/lib/ai/agents/admin-notification';
+import { UserStore } from '@/lib/auth/user-store';
 
 function slugify(text: string): string {
   return text
@@ -51,6 +52,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: 'Titulli, çmimi dhe komuna janë fusha të detyrueshme.' },
         { status: 400 }
+      );
+    }
+
+    // Require registered account to publish property
+    const cookieUser = req.cookies.get('pronax_verified_login')?.value;
+    const sellerEmail = (body.seller_email || cookieUser || '').toLowerCase().trim();
+    const registeredUser = UserStore.findByEmail(sellerEmail);
+
+    if (!cookieUser && !registeredUser && sellerEmail !== 'pronaxestate@outlook.com') {
+      return NextResponse.json(
+        { error: 'Duhet të keni një llogari të vlefshme në PronaX për të publikuar shpallje. Ju lutem kyçuni ose regjistrohuni.' },
+        { status: 401 }
       );
     }
 

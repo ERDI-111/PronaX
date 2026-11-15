@@ -15,6 +15,7 @@ export interface OtpRequestResult {
   message: string;
   waitSeconds?: number;
   deliveryResult?: EmailDeliveryResult;
+  simulatedCode?: string;
   error?: string;
 }
 
@@ -109,6 +110,7 @@ export class AuthVerificationAgent {
             ? 'Dështoi dërgimi i email-it të verifikimit. Ju lutem provoni sërish.'
             : 'Failed to send verification email. Please try again.'),
       deliveryResult,
+      simulatedCode: deliveryResult.simulated ? code : undefined,
     };
   }
 

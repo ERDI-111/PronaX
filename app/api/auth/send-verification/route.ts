@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AuthVerificationAgent } from '@/lib/ai/agents/auth-verification';
+import { UserStore } from '@/lib/auth/user-store';
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,34 +15,61 @@ export async function POST(req: NextRequest) {
     }
 
     const normalizedEmail = email.toLowerCase().trim();
+    const purpose = (body.purpose || 'login') as any;
 
-    // 1. Optional Credential Check against Supabase if password is provided
-    if (checkCredentials && password) {
+    // 1. Account existence and credential check (required for login)
+    if (purpose === 'login' && checkCredentials) {
+      const user = UserStore.findByEmail(normalizedEmail);
+
+      // Check against Supabase if configured
+      let supabaseFound = false;
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-      if (supabaseUrl && supabaseKey && !supabaseUrl.includes('your-project')) {
+      if (supabaseUrl && supabaseKey && !supabaseUrl.includes('your-project') && password) {
         try {
           const { createClient } = await import('@supabase/supabase-js');
           const supabase = createClient(supabaseUrl, supabaseKey);
-          const { error: authError } = await supabase.auth.signInWithPassword({
+          const { data, error: authError } = await supabase.auth.signInWithPassword({
             email: normalizedEmail,
             password,
           });
-
-          if (authError) {
+          if (!authError && data?.user) {
+            supabaseFound = true;
+          } else if (authError) {
             return NextResponse.json(
               { error: 'Email ose fjalëkalimi janë të gabuar. Ju lutem provoni përsëri.' },
               { status: 401 }
             );
           }
         } catch {
-          // If Supabase auth fails to connect, proceed with verification code
+          // Supabase offline, fallback to UserStore
+        }
+      }
+
+      // If user does not exist in local store or Supabase
+      if (!user && !supabaseFound) {
+        return NextResponse.json(
+          {
+            error:
+              'Kjo adresë email nuk është e regjistruar në PronaX. Ju lutem regjistrohuni së pari te "Regjistrohu falas".',
+          },
+          { status: 404 }
+        );
+      }
+
+      // If user exists in local store, verify password
+      if (user && password && !supabaseFound) {
+        const isPasswordValid = UserStore.verifyPassword(normalizedEmail, password);
+        if (!isPasswordValid) {
+          return NextResponse.json(
+            { error: 'Fjalëkalimi i dhënë është i pasaktë. Ju lutem provoni përsëri.' },
+            { status: 401 }
+          );
         }
       }
     }
 
-    const purpose = (body.purpose || 'login') as any;
     const lang = (body.language || 'sq') as 'sq' | 'en';
     const clientIp = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '127.0.0.1';
 
@@ -66,6 +94,8 @@ export async function POST(req: NextRequest) {
       message: otpResult.message,
       cooldownSeconds: 60,
       deliveryResult: otpResult.deliveryResult,
+      isSimulated: otpResult.deliveryResult?.simulated,
+      simulatedCode: otpResult.simulatedCode,
     });
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : 'Dështoi dërgimi i kodit të verifikimit.';

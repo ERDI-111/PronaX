@@ -32,6 +32,7 @@ function LoginForm() {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null);
+  const [simulatedNotice, setSimulatedNotice] = useState<string | null>(null);
 
   // Timers
   const [cooldown, setCooldown] = useState(0); // Cooldown for resend (60s)
@@ -76,6 +77,7 @@ function LoginForm() {
     setLoading(true);
     setErrorMessage('');
     setSuccessMessage('');
+    setSimulatedNotice(null);
 
     try {
       const res = await fetch('/api/auth/send-verification', {
@@ -97,6 +99,10 @@ function LoginForm() {
       setCooldown(data.cooldownSeconds || 60);
       setExpirySeconds(300); // 5 minutes
       setRemainingAttempts(5);
+
+      if (data.isSimulated && data.simulatedCode) {
+        setSimulatedNotice(data.simulatedCode);
+      }
     } catch {
       setErrorMessage('Ndodhi një gabim gjatë lidhjes. Ju lutem provoni përsëri.');
     } finally {
@@ -179,6 +185,9 @@ function LoginForm() {
       }
 
       setSuccessMessage('Kodi u verifikua me sukses! Po kyçeni...');
+      try {
+        localStorage.setItem('pronax_user', JSON.stringify({ email: email.toLowerCase().trim() }));
+      } catch {}
 
       // Admin auto-redirect
       const targetUrl =
@@ -223,7 +232,10 @@ function LoginForm() {
       setExpirySeconds(300);
       setDigits(['', '', '', '', '', '']);
       setRemainingAttempts(5);
-      setSuccessMessage('Kodi i ri u dërgua me sukses në email-in tuaj.');
+      setSuccessMessage('Kodi i ri u dërgua me sukses.');
+      if (data.isSimulated && data.simulatedCode) {
+        setSimulatedNotice(data.simulatedCode);
+      }
       setTimeout(() => digitRefs.current[0]?.focus(), 100);
     } catch {
       setErrorMessage('Ndodhi një gabim gjatë ridërgimit.');
@@ -350,6 +362,19 @@ function LoginForm() {
                 {email}
               </p>
             </div>
+
+            {/* Simulated environment testing notice */}
+            {simulatedNotice && (
+              <div className="mb-4 p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-xs flex items-start gap-2.5">
+                <Clock className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+                <div>
+                  <p className="font-bold">Mjedis Testimi (SMTP i pakonfiguruar në Render):</p>
+                  <p className="mt-0.5 leading-relaxed">
+                    Kodi juaj 2FA për testim është: <strong className="font-mono text-sm tracking-widest text-emerald-700 dark:text-emerald-400 bg-amber-100 dark:bg-amber-900/60 px-2 py-0.5 rounded-lg">{simulatedNotice}</strong>
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Error Message */}
             {errorMessage && (
