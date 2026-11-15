@@ -8,7 +8,7 @@ import {
   LayoutDashboard, Building2, Users, ShieldCheck, CreditCard,
   TrendingUp, Clock, AlertTriangle, CheckCircle2, XCircle,
   Eye, BarChart3, ArrowRight, Settings, Activity,
-  Euro, Flag, Database, RefreshCw, Mail, Send, Inbox, RotateCw
+  Euro, Flag, Database, RefreshCw, Mail, Send, Inbox, RotateCw, Key, Save
 } from 'lucide-react';
 
 type AdminTab = 'overview' | 'pronat' | 'perdoruesit' | 'agjencite' | 'pagesat' | 'emailet';
@@ -94,6 +94,16 @@ export default function AdminDashboardPage() {
   const [emailData, setEmailData] = useState<{
     adminEmail: string;
     activeProvider: string;
+    config?: {
+      provider?: string;
+      smtpHost?: string;
+      smtpPort?: number;
+      smtpUser?: string;
+      hasSmtpPass?: boolean;
+      hasResendKey?: boolean;
+      fromEmail?: string;
+      adminEmail?: string;
+    };
     stats: {
       totalSent: number;
       delivered: number;
@@ -108,6 +118,12 @@ export default function AdminDashboardPage() {
   const [emailStatusMsg, setEmailStatusMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [retryingEmailId, setRetryingEmailId] = useState<string | null>(null);
 
+  const [smtpPassInput, setSmtpPassInput] = useState('');
+  const [showSmtpPass, setShowSmtpPass] = useState(false);
+  const [savingEmailConfig, setSavingEmailConfig] = useState(false);
+  const [testingConnection, setTestingConnection] = useState(false);
+  const [connectionTestMsg, setConnectionTestMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
   const fetchEmailData = async () => {
     try {
       const res = await fetch('/api/admin/emails');
@@ -117,6 +133,63 @@ export default function AdminDashboardPage() {
       }
     } catch (err) {
       console.error('Failed to load email logs:', err);
+    }
+  };
+
+  const handleSaveEmailConfig = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingEmailConfig(true);
+    setConnectionTestMsg(null);
+    try {
+      const res = await fetch('/api/admin/emails', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'save_config',
+          smtpPass: smtpPassInput,
+          smtpUser: 'pronaxestate@outlook.com',
+          smtpHost: 'smtp-mail.outlook.com',
+          smtpPort: 587,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setConnectionTestMsg({
+          type: data.connectionTest?.success ? 'success' : 'error',
+          text: data.connectionTest?.message || data.message,
+        });
+        await fetchEmailData();
+      } else {
+        setConnectionTestMsg({
+          type: 'error',
+          text: data.error || 'Dështoi ruajtja e konfigurimit.',
+        });
+      }
+    } catch (err: any) {
+      setConnectionTestMsg({ type: 'error', text: `Gabim rrjeti: ${err.message}` });
+    } finally {
+      setSavingEmailConfig(false);
+    }
+  };
+
+  const handleTestConnection = async () => {
+    setTestingConnection(true);
+    setConnectionTestMsg(null);
+    try {
+      const res = await fetch('/api/admin/emails', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'test_connection' }),
+      });
+      const data = await res.json();
+      setConnectionTestMsg({
+        type: data.success ? 'success' : 'error',
+        text: data.message || (data.success ? 'Lidhja është aktive!' : 'Dështoi lidhja.'),
+      });
+    } catch (err: any) {
+      setConnectionTestMsg({ type: 'error', text: `Gabim rrjeti: ${err.message}` });
+    } finally {
+      setTestingConnection(false);
     }
   };
 
@@ -131,10 +204,17 @@ export default function AdminDashboardPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setEmailStatusMsg({
-          type: 'success',
-          text: `Email-i testues u dërgua me sukses te pronaxestate@outlook.com! (Ofruesi: ${data.provider}${data.simulated ? ' - Simuluar' : ''})`,
-        });
+        if (data.simulated) {
+          setEmailStatusMsg({
+            type: 'error',
+            text: `VËREJTJE: Email-i u SIMULUAR në sistem por NUK doli dot në Outlook sepse mungon fjalëkalimi i Outlook SMTP. Ju lutem vendosni fjalëkalimin / App Password te formulari më poshtë dhe klikoni "Ruaj & Verifiko Lidhjen me Outlook".`,
+          });
+        } else {
+          setEmailStatusMsg({
+            type: 'success',
+            text: `URIME! Email-i testues u dërgua me SUKSES në Outlook te pronaxestate@outlook.com! (ID: ${data.messageId || 'OK'})`,
+          });
+        }
         await fetchEmailData();
       } else {
         setEmailStatusMsg({
@@ -800,6 +880,127 @@ export default function AdminDashboardPage() {
                   <span>{emailStatusMsg.text}</span>
                 </div>
               )}
+            </div>
+
+            {/* Outlook SMTP Configuration Box */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+                <div>
+                  <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
+                    <Key className="w-4 h-4 text-emerald-600" />
+                    <span>Lidhja me Outlook Mailbox (pronaxestate@outlook.com)</span>
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Vendosni fjalëkalimin e Outlook ose <strong>App Password</strong> për dërgimin e menjëhershëm të 2FA, mesazheve të kontaktit dhe njoftimeve tek pronaxestate@outlook.com.
+                  </p>
+                </div>
+                <div>
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
+                    emailData?.activeProvider === 'smtp'
+                      ? 'bg-emerald-100 text-emerald-800'
+                      : 'bg-amber-100 text-amber-800'
+                  }`}>
+                    {emailData?.activeProvider === 'smtp' ? '✅ Outlook SMTP Aktiv' : '⚠️ Mënyra Simulim (Mungon Fjalëkalimi)'}
+                  </span>
+                </div>
+              </div>
+
+              <form onSubmit={handleSaveEmailConfig} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Email Zyrtar</label>
+                    <input
+                      type="text"
+                      readOnly
+                      value="pronaxestate@outlook.com"
+                      className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs font-mono text-slate-700 cursor-not-allowed"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Serveri SMTP & Porti</label>
+                    <input
+                      type="text"
+                      readOnly
+                      value="smtp-mail.outlook.com:587 (TLS)"
+                      className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs font-mono text-slate-700 cursor-not-allowed"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                      Fjalëkalimi / App Password *
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showSmtpPass ? 'text' : 'password'}
+                        value={smtpPassInput}
+                        onChange={(e) => setSmtpPassInput(e.target.value)}
+                        placeholder={emailData?.config?.hasSmtpPass ? '•••••••• (I ruajtur në sistem)' : 'Shënoni fjalëkalimin e Outlook'}
+                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 pr-12"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowSmtpPass(!showSmtpPass)}
+                        className="absolute right-2 top-2 text-slate-400 hover:text-slate-600 text-xs px-1"
+                      >
+                        {showSmtpPass ? 'Fshih' : 'Shfaq'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Microsoft App Password Instructions */}
+                <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-1.5 text-slate-600">
+                  <div className="font-bold text-slate-800 flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-blue-600" />
+                    <span>Udhëzues për lidhjen me llogarinë Microsoft:</span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 leading-relaxed">
+                    Për shkak të sigurisë së Microsoft-it, nëse llogaria juaj ka Verifikim me 2 Hapa (2FA) ose kërkon autorizim aplikacioni, gjeneroni një <strong>App Password</strong>:
+                  </p>
+                  <ol className="list-decimal list-inside space-y-1 text-[11px] text-slate-600 pl-1">
+                    <li>Hapni llogarinë Microsoft te <a href="https://account.microsoft.com/security" target="_blank" rel="noreferrer" className="text-emerald-700 underline font-semibold">account.microsoft.com/security</a>.</li>
+                    <li>Shkoni te <strong>Opsionet e avancuara të sigurisë (Advanced security options)</strong>.</li>
+                    <li>Te seksioni <strong>Fjalëkalimet e aplikacioneve (App passwords)</strong>, klikoni <strong>Create a new app password</strong>.</li>
+                    <li>Kopjoni fjalëkalimin 16-shifror dhe vendoseni këtu, pastaj klikoni <strong>Ruaj & Verifiko Lidhjen</strong>.</li>
+                  </ol>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3 pt-1">
+                  <button
+                    type="submit"
+                    disabled={savingEmailConfig || !smtpPassInput}
+                    className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-2 disabled:opacity-50"
+                  >
+                    {savingEmailConfig ? <RotateCw className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                    <span>Ruaj & Verifiko Lidhjen me Outlook</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleTestConnection}
+                    disabled={testingConnection}
+                    className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 disabled:opacity-50"
+                  >
+                    {testingConnection ? <RotateCw className="w-3.5 h-3.5 animate-spin" /> : <Activity className="w-3.5 h-3.5 text-blue-600" />}
+                    <span>Verifiko Statusin e Lidhjes</span>
+                  </button>
+                </div>
+
+                {connectionTestMsg && (
+                  <div className={`p-3.5 rounded-xl border text-xs font-medium flex items-center gap-2 ${
+                    connectionTestMsg.type === 'success'
+                      ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                      : 'bg-rose-50 border-rose-200 text-rose-800'
+                  }`}>
+                    {connectionTestMsg.type === 'success' ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    ) : (
+                      <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                    )}
+                    <span>{connectionTestMsg.text}</span>
+                  </div>
+                )}
+              </form>
             </div>
 
             {/* Email KPI Metrics */}

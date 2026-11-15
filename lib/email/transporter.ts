@@ -12,6 +12,18 @@ import {
 const DATA_DIR = path.join(process.cwd(), 'data');
 const EMAIL_LOGS_FILE = path.join(DATA_DIR, 'email-logs.json');
 const EMAIL_QUEUE_FILE = path.join(DATA_DIR, 'email-queue.json');
+const EMAIL_CONFIG_FILE = path.join(DATA_DIR, 'email-config.json');
+
+export interface EmailConfig {
+  provider?: EmailProviderType;
+  smtpHost?: string;
+  smtpPort?: number;
+  smtpUser?: string;
+  smtpPass?: string;
+  resendApiKey?: string;
+  fromEmail?: string;
+  adminEmail?: string;
+}
 
 // Memory caches
 let inMemoryLogs: LoggedEmail[] = [];
@@ -25,6 +37,28 @@ function ensureDataDir() {
     }
   } catch (err) {
     console.error('Failed to create data directory:', err);
+  }
+}
+
+function loadConfigFromDisk(): EmailConfig {
+  try {
+    ensureDataDir();
+    if (fs.existsSync(EMAIL_CONFIG_FILE)) {
+      const raw = fs.readFileSync(EMAIL_CONFIG_FILE, 'utf8');
+      return JSON.parse(raw);
+    }
+  } catch (err) {
+    console.error('Failed to load email config from disk:', err);
+  }
+  return {};
+}
+
+function saveConfigToDisk(config: EmailConfig) {
+  try {
+    ensureDataDir();
+    fs.writeFileSync(EMAIL_CONFIG_FILE, JSON.stringify(config, null, 2), 'utf8');
+  } catch (err) {
+    console.error('Failed to save email config to disk:', err);
   }
 }
 
@@ -80,15 +114,34 @@ export class EmailTransporter {
   public static readonly DEFAULT_SENDER = process.env.EMAIL_FROM || 'pronaxestate@outlook.com';
   public static readonly ADMIN_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL || 'pronaxestate@outlook.com';
 
+  static getConfig(): EmailConfig {
+    const disk = loadConfigFromDisk();
+    return {
+      provider: (process.env.EMAIL_PROVIDER as any) || disk.provider,
+      smtpHost: process.env.SMTP_HOST || disk.smtpHost || 'smtp-mail.outlook.com',
+      smtpPort: Number(process.env.SMTP_PORT || disk.smtpPort || 587),
+      smtpUser: process.env.SMTP_USER || disk.smtpUser || process.env.EMAIL_FROM || 'pronaxestate@outlook.com',
+      smtpPass: process.env.SMTP_PASS || process.env.OUTLOOK_PASSWORD || disk.smtpPass || '',
+      resendApiKey: process.env.RESEND_API_KEY || disk.resendApiKey || '',
+      fromEmail: process.env.EMAIL_FROM || disk.fromEmail || 'pronaxestate@outlook.com',
+      adminEmail: process.env.ADMIN_NOTIFICATION_EMAIL || disk.adminEmail || 'pronaxestate@outlook.com',
+    };
+  }
+
+  static saveConfig(updates: Partial<EmailConfig>): EmailConfig {
+    const current = loadConfigFromDisk();
+    const updated: EmailConfig = { ...current, ...updates };
+    saveConfigToDisk(updated);
+    return this.getConfig();
+  }
+
   /**
    * Detects the configured active email provider.
    */
   static getActiveProvider(): EmailProviderType {
-    if (process.env.EMAIL_PROVIDER) {
-      const p = process.env.EMAIL_PROVIDER.toLowerCase();
-      if (['microsoft_graph', 'smtp', 'resend', 'simulated'].includes(p)) {
-        return p as EmailProviderType;
-      }
+    const config = this.getConfig();
+    if (config.provider && ['microsoft_graph', 'smtp', 'resend', 'simulated'].includes(config.provider)) {
+      return config.provider;
     }
 
     // 1. Microsoft Graph API
@@ -101,16 +154,83 @@ export class EmailTransporter {
     }
 
     // 2. SMTP (Outlook or custom)
-    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    if (config.smtpPass) {
       return 'smtp';
     }
 
     // 3. Resend
-    if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY.startsWith('re_')) {
+    if (config.resendApiKey && config.resendApiKey.startsWith('re_')) {
       return 'resend';
     }
 
     return 'simulated';
+  }
+
+  /**
+   * Tests live connection to the configured email provider.
+   */
+  static async testConnection(): Promise<{ success: boolean; message: string; provider: EmailProviderType }> {
+    const provider = this.getActiveProvider();
+    const config = this.getConfig();
+
+    if (provider === 'simulated') {
+      return {
+        success: false,
+        provider: 'simulated',
+        message: 'Mungon fjalëkalimi i Outlook SMTP (SMTP_PASS) ose çelësi Resend. Sistemi po operon në mënyrë simulimi (nuk dërgon dot email real në Outlook).',
+      };
+    }
+
+    if (provider === 'smtp') {
+      if (!config.smtpPass) {
+        return {
+          success: false,
+          provider: 'smtp',
+          message: 'Fjalëkalimi i Outlook SMTP nuk është vendosur.',
+        };
+      }
+      try {
+        const host = config.smtpHost || 'smtp-mail.outlook.com';
+        const port = Number(config.smtpPort || 587);
+        const user = config.smtpUser || 'pronaxestate@outlook.com';
+        const transporter = nodemailer.createTransport({
+          host,
+          port,
+          secure: port === 465,
+          auth: { user, pass: config.smtpPass },
+          tls: { minVersion: 'TLSv1.2', rejectUnauthorized: false },
+        });
+
+        await transporter.verify();
+        return {
+          success: true,
+          provider: 'smtp',
+          message: `Lidhja me serverin Outlook (${host}:${port}) si ${user} u verifikua me SUKSES!`,
+        };
+      } catch (err: any) {
+        return {
+          success: false,
+          provider: 'smtp',
+          message: `Dështoi vërtetimi me Outlook SMTP (${err.message}). Nëse llogaria ka 2FA, duhet të përdorni një App Password nga Llogaria Microsoft.`,
+        };
+      }
+    }
+
+    if (provider === 'resend') {
+      try {
+        const res = await fetch('https://api.resend.com/api-keys', {
+          headers: { 'Authorization': `Bearer ${config.resendApiKey}` },
+        });
+        if (res.ok) {
+          return { success: true, provider: 'resend', message: 'Çelësi Resend API është aktiv dhe i vlefshëm.' };
+        }
+        return { success: false, provider: 'resend', message: `Resend API refuzoi çelësin: status ${res.status}` };
+      } catch (err: any) {
+        return { success: false, provider: 'resend', message: err.message };
+      }
+    }
+
+    return { success: false, provider, message: 'Ofruesi i panjohur' };
   }
 
   /**
@@ -270,15 +390,17 @@ export class EmailTransporter {
    */
   private static async sendViaSmtp(payload: EmailPayload): Promise<EmailDeliveryResult> {
     const now = new Date().toISOString();
+    const config = this.getConfig();
+
     try {
-      const host = process.env.SMTP_HOST || 'smtp-mail.outlook.com';
-      const port = Number(process.env.SMTP_PORT || 587);
-      const secure = process.env.SMTP_SECURE === 'true' || port === 465;
-      const user = process.env.SMTP_USER || process.env.EMAIL_FROM || 'pronaxestate@outlook.com';
-      const pass = process.env.SMTP_PASS;
+      const host = config.smtpHost || 'smtp-mail.outlook.com';
+      const port = Number(config.smtpPort || 587);
+      const secure = port === 465;
+      const user = config.smtpUser || 'pronaxestate@outlook.com';
+      const pass = config.smtpPass;
 
       if (!pass) {
-        throw new Error('SMTP fjalëkalimi (SMTP_PASS) nuk është i konfiguruar.');
+        throw new Error('Fjalëkalimi i Outlook SMTP (SMTP_PASS) nuk është i konfiguruar.');
       }
 
       const transporter = nodemailer.createTransport({
@@ -287,7 +409,7 @@ export class EmailTransporter {
         secure,
         auth: { user, pass },
         tls: {
-          ciphers: 'SSLv3',
+          minVersion: 'TLSv1.2',
           rejectUnauthorized: false,
         },
       });
@@ -323,8 +445,9 @@ export class EmailTransporter {
    */
   private static async sendViaResend(payload: EmailPayload): Promise<EmailDeliveryResult> {
     const now = new Date().toISOString();
-    const apiKey = process.env.RESEND_API_KEY!;
-    const sender = process.env.EMAIL_FROM || 'PronaX Kosovë <njoftime@pronax-ks.com>';
+    const config = this.getConfig();
+    const apiKey = config.resendApiKey || process.env.RESEND_API_KEY!;
+    const sender = config.fromEmail || process.env.EMAIL_FROM || 'PronaX Kosovë <onboarding@resend.dev>';
 
     try {
       const response = await fetch('https://api.resend.com/emails', {

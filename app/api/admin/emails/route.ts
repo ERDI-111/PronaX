@@ -43,11 +43,22 @@ export async function GET(req: NextRequest) {
   const stats = EmailTransporter.getStats();
   const logs = EmailTransporter.getLogs();
   const queue = EmailTransporter.getQueue();
+  const config = EmailTransporter.getConfig();
 
   return NextResponse.json({
     success: true,
     adminEmail: AdminNotificationAgent.ADMIN_EMAIL,
     activeProvider: stats.activeProvider,
+    config: {
+      provider: config.provider,
+      smtpHost: config.smtpHost,
+      smtpPort: config.smtpPort,
+      smtpUser: config.smtpUser,
+      hasSmtpPass: Boolean(config.smtpPass),
+      hasResendKey: Boolean(config.resendApiKey),
+      fromEmail: config.fromEmail,
+      adminEmail: config.adminEmail,
+    },
     stats: {
       totalSent: stats.total,
       delivered: stats.delivered,
@@ -64,6 +75,33 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { action } = body;
+
+    // Action 0: Save Email Configuration
+    if (action === 'save_config') {
+      const updates: any = {};
+      if (body.smtpPass !== undefined) updates.smtpPass = body.smtpPass.trim();
+      if (body.smtpUser !== undefined) updates.smtpUser = body.smtpUser.trim();
+      if (body.smtpHost !== undefined) updates.smtpHost = body.smtpHost.trim();
+      if (body.smtpPort !== undefined) updates.smtpPort = Number(body.smtpPort);
+      if (body.resendApiKey !== undefined) updates.resendApiKey = body.resendApiKey.trim();
+      if (body.provider !== undefined) updates.provider = body.provider;
+
+      EmailTransporter.saveConfig(updates);
+      const testResult = await EmailTransporter.testConnection();
+
+      return NextResponse.json({
+        success: true,
+        message: 'Konfigurimi i email-it u ruajt me sukses.',
+        activeProvider: EmailTransporter.getActiveProvider(),
+        connectionTest: testResult,
+      });
+    }
+
+    // Action 0.5: Test Live Connection
+    if (action === 'test_connection') {
+      const testResult = await EmailTransporter.testConnection();
+      return NextResponse.json(testResult);
+    }
 
     // Action 1: Send Admin Test Email to pronaxestate@outlook.com
     if (action === 'send_test') {
