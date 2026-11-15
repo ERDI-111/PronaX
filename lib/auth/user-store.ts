@@ -156,4 +156,42 @@ export class UserStore {
     const testHash = hashPassword(passwordAttempt, user.salt);
     return testHash === user.passwordHash;
   }
+
+  static upsertOAuthUser(params: {
+    email: string;
+    fullName: string;
+    avatarUrl?: string;
+    provider: 'google';
+  }): UserRecord {
+    loadUsersFromDisk();
+    const normalizedEmail = params.email.toLowerCase().trim();
+    const existing = inMemoryUsers.get(normalizedEmail);
+
+    if (existing) {
+      existing.isVerified = true;
+      if (!existing.fullName && params.fullName) existing.fullName = params.fullName;
+      saveUsersToDisk();
+      return existing;
+    }
+
+    const salt = crypto.randomBytes(16).toString('hex');
+    const passwordHash = hashPassword(crypto.randomBytes(32).toString('hex'), salt);
+    const id = `usr_g_${Date.now().toString().slice(-6)}`;
+
+    const newUser: UserRecord = {
+      id,
+      email: normalizedEmail,
+      fullName: params.fullName || normalizedEmail.split('@')[0],
+      phone: '',
+      role: normalizedEmail === 'pronaxestate@outlook.com' ? 'admin' : 'user',
+      passwordHash,
+      salt,
+      createdAt: new Date().toISOString(),
+      isVerified: true,
+    };
+
+    inMemoryUsers.set(normalizedEmail, newUser);
+    saveUsersToDisk();
+    return newUser;
+  }
 }
