@@ -31,7 +31,9 @@ function loadFromDisk(): Record<string, PropertySummary> {
 }
 
 // Persistent store loaded from disk
-const demoProperties: Record<string, PropertySummary> = loadFromDisk();
+function getPropertiesMap(): Record<string, PropertySummary> {
+  return loadFromDisk();
+}
 
 const inMemoryPayments: Record<string, PaymentRecord> = {};
 
@@ -44,45 +46,49 @@ const inMemoryNotifications: InAppNotification[] = [];
 export class PaymentStore {
   // Properties
   static async createProperty(property: PropertySummary): Promise<PropertySummary> {
-    demoProperties[property.id] = { ...property };
-    saveToDisk(demoProperties);
-    return demoProperties[property.id];
+    const props = getPropertiesMap();
+    props[property.id] = { ...property };
+    saveToDisk(props);
+    return props[property.id];
   }
 
   static async updateProperty(id: string, updates: Partial<PropertySummary>): Promise<PropertySummary | null> {
-    const prop = demoProperties[id];
+    const props = getPropertiesMap();
+    const prop = props[id];
     if (!prop) return null;
-    demoProperties[id] = {
+    props[id] = {
       ...prop,
       ...updates,
       id, // protect id from being overwritten
     };
-    saveToDisk(demoProperties);
-    return demoProperties[id];
+    saveToDisk(props);
+    return props[id];
   }
 
   static async deleteProperty(id: string): Promise<boolean> {
-    if (demoProperties[id]) {
-      delete demoProperties[id];
-      saveToDisk(demoProperties);
+    const props = getPropertiesMap();
+    if (props[id]) {
+      delete props[id];
+      saveToDisk(props);
       return true;
     }
     return false;
   }
 
   static async getProperty(id: string): Promise<PropertySummary | null> {
-    if (demoProperties[id]) return demoProperties[id];
-    const bySlug = Object.values(demoProperties).find(p => p.slug === id);
+    const props = getPropertiesMap();
+    if (props[id]) return props[id];
+    const bySlug = Object.values(props).find(p => p.slug === id);
     if (bySlug) return bySlug;
     return null;
   }
 
   static async getAllProperties(): Promise<PropertySummary[]> {
-    return Object.values(demoProperties);
+    return Object.values(getPropertiesMap());
   }
 
   static async getUserProperties(userId: string): Promise<PropertySummary[]> {
-    return Object.values(demoProperties).filter(p => p.owner_id === userId);
+    return Object.values(getPropertiesMap()).filter(p => p.owner_id === userId);
   }
 
   /**
@@ -92,7 +98,7 @@ export class PaymentStore {
    */
   static async getPublicProperties(): Promise<PropertySummary[]> {
     const now = new Date();
-    return Object.values(demoProperties).filter(p => {
+    return Object.values(getPropertiesMap()).filter(p => {
       if (p.status !== 'published') return false;
       if (p.expires_at && new Date(p.expires_at) <= now) return false;
       return true;
@@ -115,7 +121,7 @@ export class PaymentStore {
     per_page?: number;
     includePending?: boolean;
   }): Promise<{ properties: PropertySummary[]; total: number; page: number; per_page: number; total_pages: number }> {
-    let list = Object.values(demoProperties);
+    let list = Object.values(getPropertiesMap());
 
     if (!params.includePending) {
       const now = new Date();
@@ -197,7 +203,8 @@ export class PaymentStore {
       expired_notification_sent_at?: string;
     }
   ): Promise<PropertySummary | null> {
-    const prop = demoProperties[id];
+    const props = getPropertiesMap();
+    const prop = props[id];
     if (!prop) return null;
 
     prop.status = status;
@@ -208,7 +215,7 @@ export class PaymentStore {
     if (dates?.expiration_warning_1d_sent_at) prop.expiration_warning_1d_sent_at = dates.expiration_warning_1d_sent_at;
     if (dates?.expired_notification_sent_at) prop.expired_notification_sent_at = dates.expired_notification_sent_at;
 
-    saveToDisk(demoProperties);
+    saveToDisk(props);
     return prop;
   }
 

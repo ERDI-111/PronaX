@@ -165,7 +165,7 @@ export default function PropertyPublishingWizard() {
     fileInputRef.current?.click();
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
@@ -174,7 +174,7 @@ export default function PropertyPublishingWizard() {
       return;
     }
 
-    const newPhotoUrls: string[] = [];
+    const readers: Promise<string>[] = [];
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       // Max 10MB per image
@@ -186,12 +186,22 @@ export default function PropertyPublishingWizard() {
         alert(`Formati i skedarit "${file.name}" nuk lejohet. Lejohen vetëm JPG, PNG, WEBP.`);
         continue;
       }
-      const previewUrl = URL.createObjectURL(file);
-      newPhotoUrls.push(previewUrl);
+      readers.push(
+        new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            if (typeof reader.result === 'string') {
+              resolve(reader.result);
+            }
+          };
+          reader.readAsDataURL(file);
+        })
+      );
     }
 
-    if (newPhotoUrls.length > 0) {
-      updateField('images', [...formData.images, ...newPhotoUrls]);
+    const loadedDataUrls = await Promise.all(readers);
+    if (loadedDataUrls.length > 0) {
+      updateField('images', [...formData.images, ...loadedDataUrls]);
     }
 
     if (e.target) e.target.value = '';

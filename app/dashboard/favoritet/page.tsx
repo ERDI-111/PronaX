@@ -1,39 +1,46 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Heart, Trash2, ArrowRight, Building2, MapPin } from 'lucide-react';
 
 export default function FavoritesPage() {
-  const [favorites, setFavorites] = useState([
-    {
-      id: 'prop-ks-103',
-      title: 'Lokal afarist modern në qendër të Pejës',
-      price: 750,
-      currency: 'EUR',
-      property_type: 'Lokal afarist',
-      municipality_id: 'Pejë',
-      settlement_id: 'Qendër',
-      area_m2: 110,
-      cover_image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80',
-    },
-    {
-      id: 'prop-ks-104',
-      title: 'Vilë luksoze me pamje malore në Brezovicë',
-      price: 240000,
-      currency: 'EUR',
-      property_type: 'Vilë',
-      municipality_id: 'Shtërpcë',
-      settlement_id: 'Brezovicë',
-      area_m2: 260,
-      cover_image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80',
-    },
-  ]);
+  const [favorites, setFavorites] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('pronax_favorites');
+      if (stored) {
+        const ids: string[] = JSON.parse(stored);
+        if (Array.isArray(ids) && ids.length > 0) {
+          fetch('/api/properties?per_page=100')
+            .then(r => r.ok ? r.json() : null)
+            .then(data => {
+              if (data?.properties) {
+                const matched = data.properties.filter((p: any) => ids.includes(p.id));
+                setFavorites(matched);
+              }
+            })
+            .catch(() => {})
+            .finally(() => setLoading(false));
+          return;
+        }
+      }
+    } catch {}
+    setLoading(false);
+  }, []);
 
   const removeFavorite = (id: string) => {
-    setFavorites(prev => prev.filter(f => f.id !== id));
+    setFavorites(prev => {
+      const updated = prev.filter(f => f.id !== id);
+      try {
+        localStorage.setItem('pronax_favorites', JSON.stringify(updated.map(u => u.id)));
+      } catch {}
+      return updated;
+    });
   };
 
   return (

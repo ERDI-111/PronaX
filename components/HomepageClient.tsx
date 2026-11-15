@@ -31,37 +31,31 @@ const FEATURED_PROPERTIES: FeaturedPropertyItem[] = [];
 const POPULAR_LOCATIONS = [
   { 
     name: 'Prishtinë', 
-    count: 342, 
     image: '/images/cities/prishtine.jpg',
     fallback: '/images/cities/prishtine.jpg'
   },
   { 
     name: 'Prizren', 
-    count: 198, 
     image: '/images/cities/prizren.jpg',
     fallback: '/images/cities/prizren.jpg'
   },
   { 
     name: 'Pejë', 
-    count: 124, 
     image: '/images/cities/peje.jpg',
     fallback: '/images/cities/peje.jpg'
   },
   { 
     name: 'Ferizaj', 
-    count: 87, 
     image: '/images/cities/ferizaj.jpg',
     fallback: '/images/cities/ferizaj.jpg'
   },
   { 
     name: 'Gjilan', 
-    count: 72, 
     image: '/images/cities/gjilan.jpg',
     fallback: '/images/cities/gjilan.jpg'
   },
   { 
     name: 'Mitrovicë', 
-    count: 56, 
     image: '/images/cities/mitrovice.jpg',
     fallback: '/images/cities/mitrovice.jpg'
   },
@@ -75,10 +69,10 @@ const HOW_IT_WORKS = [
 ];
 
 const STATS = [
-  { label: 'Prona Aktive', value: '800+', icon: Building2 },
   { label: 'Komuna të Mbuluara', value: '38', icon: MapPin },
-  { label: 'Agjenci të Verifikuara', value: '50+', icon: ShieldCheck },
-  { label: 'Shpallje të Suksesshme', value: '2,400+', icon: TrendingUp },
+  { label: 'Verifikim i Llogarive', value: '2FA', icon: ShieldCheck },
+  { label: 'Publikim Fillestar', value: 'Falas', icon: Sparkles },
+  { label: 'Komision për Blerësin', value: '0%', icon: TrendingUp },
 ];
 
 const PROPERTY_TYPES = [
@@ -98,8 +92,9 @@ export default function HomepageClient() {
   const [searchPriceMax, setSearchPriceMax] = useState('');
   const [featuredProperties, setFeaturedProperties] = useState<typeof FEATURED_PROPERTIES>([]);
   const [featuredLoading, setFeaturedLoading] = useState(true);
+  const [locationCounts, setLocationCounts] = useState<Record<string, number>>({});
 
-  // Load real featured properties from API
+  // Load real featured properties and real location counts from API
   useEffect(() => {
     fetch('/api/properties/featured')
       .then(r => r.ok ? r.json() : null)
@@ -110,6 +105,22 @@ export default function HomepageClient() {
       })
       .catch(() => {/* silent - show empty state */})
       .finally(() => setFeaturedLoading(false));
+
+    fetch('/api/properties?per_page=100')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.properties && Array.isArray(data.properties)) {
+          const counts: Record<string, number> = {};
+          data.properties.forEach((p: any) => {
+            const m = p.municipality_id || p.municipality;
+            if (m) {
+              counts[m] = (counts[m] || 0) + 1;
+            }
+          });
+          setLocationCounts(counts);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const buildSearchUrl = () => {
@@ -419,7 +430,11 @@ export default function HomepageClient() {
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-3">
                   <div className="font-bold text-white text-sm">{loc.name}</div>
-                  <div className="text-emerald-300 text-[11px]">{loc.count} prona</div>
+                  <div className="text-emerald-300 text-[11px]">
+                    {(locationCounts[loc.name] || 0) === 1
+                      ? '1 pronë'
+                      : `${locationCounts[loc.name] || 0} prona`}
+                  </div>
                 </div>
               </Link>
             ))}

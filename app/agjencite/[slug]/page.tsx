@@ -24,41 +24,34 @@ import { KOSOVO_AGENCIES } from '../page';
 
 function AgencyProfileContent() {
   const params = useParams();
-  const slug = (params?.slug as string) || 'dardania-real-estate';
+  const slug = (params?.slug as string) || '';
 
-  const agency = KOSOVO_AGENCIES.find(a => a.slug === slug) || KOSOVO_AGENCIES[0];
+  const agency = KOSOVO_AGENCIES.find(a => a.slug === slug);
 
   const [phoneRevealed, setPhoneRevealed] = useState(false);
   const [inquirySent, setInquirySent] = useState(false);
   const [inquiryText, setInquiryText] = useState('');
 
-  // Sample listings for this agency
-  const agencyListings = [
-    {
-      id: 'prop-ks-101',
-      title: 'Banesë moderne në lagjen Marigona Hill',
-      price: 135000,
-      currency: 'EUR',
-      type: 'shitje',
-      category: 'Banesë',
-      municipality: agency.municipality,
-      settlement: 'Veternik',
-      area_m2: 96,
-      image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80',
-    },
-    {
-      id: 'prop-ks-103',
-      title: 'Lokal afarist modern në qendër',
-      price: 750,
-      currency: 'EUR',
-      type: 'qira',
-      category: 'Lokal afarist',
-      municipality: agency.municipality,
-      settlement: 'Qendër',
-      area_m2: 110,
-      image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80',
-    },
-  ];
+  if (!agency) {
+    return (
+      <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+        <Header />
+        <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-20 text-center">
+          <Building2 className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+          <h1 className="text-2xl font-black text-[#0B192C] mb-2">Agjencia nuk u gjet</h1>
+          <p className="text-sm text-slate-500 mb-6">Kjo agjenci nuk ekziston ose nuk është e regjistruar ende në PronaX.</p>
+          <Link href="/agjencite" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs">
+            <ArrowLeft className="w-4 h-4" />
+            <span>Kthehu te Agjencitë</span>
+          </Link>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Active listings for this agency (empty until real properties are attached)
+  const agencyListings: any[] = [];
 
   const handleInquirySubmit = (e: React.FormEvent) => {
     e.preventDefault();

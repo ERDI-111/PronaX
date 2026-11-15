@@ -73,9 +73,18 @@ export async function POST(req: NextRequest) {
     const slug = `${slugify(cleanTitle)}-${id}`;
     const planId = (body.planId || 'free') as 'free' | 'weekly' | 'monthly';
 
-    const images: string[] = Array.isArray(body.images) ? body.images : [];
+    const rawImages: string[] = Array.isArray(body.images) ? body.images : [];
+    const mun = (body.municipality_id || 'Prishtinë').toLowerCase();
+    const defaultCityPhoto = mun.includes('prizren') ? '/images/cities/prizren.jpg'
+      : mun.includes('pej') ? '/images/cities/peje.jpg'
+      : mun.includes('ferizaj') ? '/images/cities/ferizaj.jpg'
+      : mun.includes('gjilan') ? '/images/cities/gjilan.jpg'
+      : mun.includes('mitrovic') ? '/images/cities/mitrovice.jpg'
+      : '/images/cities/prishtine.jpg';
+
+    const images: string[] = rawImages.length > 0 ? rawImages : [defaultCityPhoto];
     const coverIndex = typeof body.cover_image_index === 'number' ? body.cover_image_index : 0;
-    const coverImage = images[coverIndex] || images[0] || '';
+    const coverImage = images[coverIndex] || images[0] || defaultCityPhoto;
 
     // If Free plan (0€ - 3 ditë), activate immediately so property is visible on site
     const isFree = planId === 'free';
