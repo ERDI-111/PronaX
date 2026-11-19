@@ -54,6 +54,10 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 # Google Maps (Opsionale - harta funksionon edhe pa të)
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-maps-key
 
+# Kyçja me Google (pa këto, butoni "Vazhdo me Google" tregon se kyçja nuk është aktivizuar)
+GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-client-secret
+
 # Email - Resend (Opsionale - emailet simulohen pa të)
 RESEND_API_KEY=re_your_key
 EMAIL_FROM=PronaX <noreply@pronax-ks.com>
@@ -167,6 +171,58 @@ WHERE email = 'pronaxestate@outlook.com';
 4. Plotëso `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`
 
 **Pa Maps API:** trego placeholder me link Google Maps
+
+---
+
+## Kyçja dhe Regjistrimi me Google
+
+Butonat **"Vazhdo me Google"** (`/kycu`) dhe **"Regjistrohu me Google"** (`/regjistrohu`) përdorin OAuth 2.0 të Google nga serveri (authorization code + PKCE). Herën e parë që dikush kyçet me Google i krijohet llogaria në PronaX; herët e tjera hyn në të njëjtën llogari. Fjalëkalimi i Google nuk kalon kurrë nëpër PronaX.
+
+### Hapi 1: Krijo kredencialet te Google
+1. Hap [Google Cloud Console](https://console.cloud.google.com), zgjidh ose krijo një projekt dhe shko te **Google Auth Platform** (në menynë e vjetër: *APIs & Services → OAuth consent screen / Credentials*).
+2. **Branding**: emri i aplikacionit `PronaX` dhe email-i i mbështetjes. **Audience**: lloji **External**.
+3. **Data Access**: shto vetëm `openid`, `.../auth/userinfo.email` dhe `.../auth/userinfo.profile`.
+4. **Audience → Publish app**, që statusi të jetë *In production* dhe kyçja të jetë e hapur për çdo llogari Google. Statusi *Testing* është menduar vetëm për përdoruesit testues të listuar (deri në 100).
+5. **Clients → Create Client → Web application**.
+6. Te **Authorized JavaScript origins** (opsionale për këtë rrjedhë) shto:
+   - `https://pronax.onrender.com`
+   - `http://localhost:3000`
+7. Te **Authorized redirect URIs** shto (duhet të përputhen shkronjë për shkronjë: `http`/`https`, shkronjat e mëdha e të vogla, pa `/` në fund):
+   - `https://pronax.onrender.com/api/auth/callback/google`
+   - `http://localhost:3000/api/auth/callback/google`
+8. Kopjo **Client ID** dhe **Client secret**.
+
+Nëse faqja hapet edhe nga një domen tjetër (p.sh. `https://pronax-ks.com` ose `https://www.pronax-ks.com`), shto edhe atë domen te origins dhe `https://<domeni>/api/auth/callback/google` te redirect URIs.
+
+### Hapi 2: Vendos variablat
+```env
+GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-client-secret
+```
+- **Lokal:** shkruaji në `.env.local` dhe rinis `npm run dev`.
+- **Render:** shërbimi → **Environment** → shto të dy variablat → ruaj dhe bëj deploy.
+- `AUTH_SECRET` (opsionale): çelës i veçantë për nënshkrimin e sesionit. Pa të, çelësi nxirret nga `GOOGLE_CLIENT_SECRET`.
+
+### Hapi 3: Kontrollo
+Hap `/api/auth/google/status` (p.sh. `https://pronax.onrender.com/api/auth/google/status`). Duhet të tregojë `"configured": true` dhe te `authorizedRedirectUri` adresën e saktë që duhet të jetë regjistruar te Google. Faqja nuk shfaq asnjë sekret. Pastaj kliko "Vazhdo me Google" te `/kycu`.
+
+### Nëse diçka nuk shkon
+
+| Çfarë shihni | Shkaku | Zgjidhja |
+|---|---|---|
+| Te `/kycu`: "Kyçja me Google nuk është aktivizuar ende..." | Mungon `GOOGLE_CLIENT_ID` ose `GOOGLE_CLIENT_SECRET` | Shto variablat dhe rinis serverin / bëj deploy |
+| Te Google: `Error 400: redirect_uri_mismatch` | Adresa e kthimit nuk është regjistruar saktë | Kopjo `authorizedRedirectUri` nga `/api/auth/google/status` te *Authorized redirect URIs* |
+| Te Google: `Error 401: invalid_client` | Client ID i gabuar ose i fshirë | Kontrollo `GOOGLE_CLIENT_ID` |
+| Te `/kycu`: "Google refuzoi kredencialet e aplikacionit..." | `GOOGLE_CLIENT_SECRET` i gabuar | Kopjo sërish Client secret |
+| Te Google: "Access blocked" (`Error 403`) | Zakonisht aplikacioni është ende në *Testing* ose lloji i përdoruesve është *Internal* | Te **Audience** zgjidh *External* dhe kliko **Publish app** (ose shto llogarinë te *Test users*) |
+| Te `/kycu`: "Seanca e kyçjes me Google skadoi ose nuk u njoh..." | Kyçja zgjati mbi 10 minuta, ose faqja u hap nga një domen dhe Google ktheu te një tjetër | Kliko përsëri butonin; përdor të njëjtin domen që është regjistruar te Google |
+
+### Testi automatik
+```bash
+npm run build
+node scripts/test-google-oauth.cjs
+```
+Testi nis serverin e prodhimit dhe kalon gjithë rrjedhën (kyçje, regjistrim, anulim, gabime, mbrojtje) me një zëvendësues lokal të Google, pa llogari Google dhe pa kredenciale. Mos e nis ndërkohë që po përdor faqen lokalisht.
 
 ---
 

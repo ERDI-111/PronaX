@@ -38,6 +38,7 @@ function HeaderContent() {
 
   const [currentUser, setCurrentUser] = useState<{ email: string; fullName?: string; role?: string; avatarUrl?: string } | null>(null);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [avatarFailed, setAvatarFailed] = useState(false);
 
   useEffect(() => {
     const checkAuth = () => {
@@ -73,7 +74,7 @@ function HeaderContent() {
     };
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     try {
       localStorage.removeItem('pronax_user');
       document.cookie = 'pronax_verified_login=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
@@ -81,6 +82,13 @@ function HeaderContent() {
     setCurrentUser(null);
     setUserDropdownOpen(false);
     window.dispatchEvent(new Event('pronax_auth_change'));
+    try {
+      // Also clears the httpOnly session cookie that Google sign-in sets
+      await Promise.race([
+        fetch('/api/auth/logout', { method: 'POST', keepalive: true }),
+        new Promise((resolve) => setTimeout(resolve, 2500)),
+      ]);
+    } catch {}
     window.location.href = '/';
   };
 
@@ -181,8 +189,14 @@ function HeaderContent() {
                   className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-850 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-white transition-all shadow-xs"
                 >
                   <div className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs uppercase border border-emerald-500/30 overflow-hidden">
-                    {currentUser.avatarUrl ? (
-                      <img src={currentUser.avatarUrl} alt="" className="w-full h-full object-cover" />
+                    {currentUser.avatarUrl && !avatarFailed ? (
+                      <img
+                        src={currentUser.avatarUrl}
+                        alt=""
+                        referrerPolicy="no-referrer"
+                        onError={() => setAvatarFailed(true)}
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
                       currentUser.email.slice(0, 1).toUpperCase()
                     )}

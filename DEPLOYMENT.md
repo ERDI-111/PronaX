@@ -13,6 +13,7 @@ Ky dokument është udhëzuesi zyrtar i prodhimit për platformën e pasurive t�
 | **Paysera** | Modern Checkout për kartela Visa/Mastercard dhe llogari Paysera | **Po (Kërkon miratim të Llogarisë Tregtare - Merchant Account)** | Komision për transaksion (~1.2% - 2.5%) |
 | **ProCredit / NLB Virtual POS** | Gateway bankar vendor në Kosovë (3D Secure 2.0) | **Po (Kontratë zyrtare tregtare me bankën në Kosovë)** | Tarifë mujore terminali + komision ndërmjetësimi |
 | **Google Maps Platform** | Harta interaktive, Places autocomplete & Geocoding | Po (Google Cloud Console + faturim me kartelë) | 200\$ kredi mujore falas nga Google |
+| **Google OAuth (Sign in with Google)** | Kyçja dhe regjistrimi me llogari Google | Po (Google Cloud Console → Google Auth Platform, klient OAuth i llojit "Web application") | Falas |
 | **Resend** | Dërgimi i 12 shablloneve të emaileve transaksionale | Po (resend.com + verifikim i domenit me DNS) | 3,000 emaile/muaj falas |
 | **Domeni pronax-ks.com** | Emri zyrtar i domenit në Kosovë | Po (Regjistrim te regjistrues të akredituar) | Vjetor |
 
@@ -57,6 +58,10 @@ SUPABASE_SERVICE_ROLE_KEY=celes_sekret_service_role
 
 # Google Maps / OpenStreetMap Leaflet
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=celes_i_google_maps_opsional
+
+# Kyçja me Google (OAuth 2.0) - shih seksionin 8
+GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-client-secret
 
 # Emailet (Resend - Faza 9 & 2FA OTP)
 RESEND_API_KEY=re_celes_juaj_nga_resend
@@ -136,3 +141,22 @@ Vercel do të thërrasë çdo mesnatë në orën 00:00 UTC endpoint-in e verifik
 1. **Baza e të dhënave Supabase**: Aktivizoni Daily Automated Backups me periudhë ruajtjeje 7-ditore (ose 30-ditore në Pro Tier).
 2. **Eksportimi Manual Periodik**: Administratori mund të eksportojë të dhënat e plota financiare dhe të pronave në format CSV nga Paneli Financiar [`/admin/pagesat`](/admin/pagesat).
 3. **Repository Git**: Çdo ndryshim kodi versionohet dhe ruhet i paprekshëm me tag-e të lëshimit (`git tag v1.0.0`).
+
+---
+
+## 8. Kyçja me Google (OAuth 2.0)
+
+Butonat "Vazhdo me Google" dhe "Regjistrohu me Google" punojnë vetëm kur serveri ka `GOOGLE_CLIENT_ID` dhe `GOOGLE_CLIENT_SECRET`. Pa to, vizitori kthehet te `/kycu` me njoftimin se kyçja me Google nuk është aktivizuar ende. Hapat e plotë në Google Cloud Console janë te [`README.md`](README.md), seksioni "Kyçja dhe Regjistrimi me Google".
+
+1. Te klienti OAuth (lloji **Web application**) regjistroni një **Authorized redirect URI** për çdo adresë nga e cila hapet faqja:
+   * `https://pronax.onrender.com/api/auth/callback/google`
+   * `https://pronax-ks.com/api/auth/callback/google`
+   * `https://www.pronax-ks.com/api/auth/callback/google`
+   * `http://localhost:3000/api/auth/callback/google` (vetëm për zhvillim lokal)
+2. Shtoni `GOOGLE_CLIENT_ID` dhe `GOOGLE_CLIENT_SECRET` te variablat e mjedisit të hostit (Render → **Environment**, Vercel → **Environment Variables**) dhe bëni deploy.
+3. Hapni `https://<domeni>/api/auth/google/status`. Duhet të shfaqë `"configured": true` dhe te `authorizedRedirectUri` adresën e saktë për atë domen. Faqja nuk shfaq asnjë sekret.
+4. Te **Google Auth Platform → Audience** klikoni **Publish app**, që kyçja të jetë e hapur për çdo llogari Google.
+5. Provoni kyçjen me një llogari Google në një dritare private.
+
+> [!NOTE]
+> `AUTH_SECRET` është opsionale: çelës i veçantë për nënshkrimin e sesionit të kyçjes me Google. Pa të, çelësi nxirret nga `GOOGLE_CLIENT_SECRET`. Ndryshimi i njërit prej tyre i bën të pavlefshme sesionet ekzistuese të kyçjes me Google, pra ata përdorues duhet të kyçen sërish.

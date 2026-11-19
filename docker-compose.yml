@@ -15,6 +15,9 @@ services:
       - PAYMENT_PROVIDER=sandbox
       - LISTING_FEE_EUR=7.00
       - LISTING_DURATION_DAYS=30
+      # Google sign-in: passed through from the environment docker compose runs in
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/admin/health"]
       interval: 30s

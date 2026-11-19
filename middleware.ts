@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { SESSION_COOKIE, verifySessionToken } from '@/lib/auth/session';
 
 // Routes that require authentication
 const PROTECTED_ROUTES = [
@@ -95,8 +96,14 @@ export async function middleware(request: NextRequest) {
 
     const { data: { user } } = await supabase.auth.getUser();
 
+    // Google sign-in does not create a Supabase session; it issues its own signed cookie
+    const googleSession = user
+      ? null
+      : await verifySessionToken(request.cookies.get(SESSION_COOKIE)?.value);
+    const isSignedIn = !!user || !!googleSession;
+
     // Handle protected routes
-    if (isProtectedRoute(pathname) && !user) {
+    if (isProtectedRoute(pathname) && !isSignedIn) {
       const loginUrl = new URL('/kycu', request.url);
       loginUrl.searchParams.set('redirectTo', pathname);
       return NextResponse.redirect(loginUrl);
@@ -104,21 +111,25 @@ export async function middleware(request: NextRequest) {
 
     // Handle admin routes
     if (isAdminRoute(pathname)) {
-      if (!user) {
+      if (!isSignedIn) {
         const loginUrl = new URL('/kycu', request.url);
         loginUrl.searchParams.set('redirectTo', pathname);
         return NextResponse.redirect(loginUrl);
       }
 
-      // Check admin role in profiles table
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
+      if (user) {
+        // Check admin role in profiles table
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
 
-      if (!profile || profile.role !== 'admin') {
-        // Not admin → redirect to dashboard
+        if (!profile || profile.role !== 'admin') {
+          // Not admin → redirect to dashboard
+          return NextResponse.redirect(new URL('/dashboard/pronat', request.url));
+        }
+      } else if (googleSession?.role !== 'admin') {
         return NextResponse.redirect(new URL('/dashboard/pronat', request.url));
       }
     }

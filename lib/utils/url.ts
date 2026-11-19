@@ -1,5 +1,23 @@
 import { NextRequest } from 'next/server';
 
+/** Proxies may append values ("https, http"); the first one is the client-facing value. */
+function firstHeaderValue(value: string | null): string {
+  return (value || '').split(',')[0].trim();
+}
+
+function isValidHost(host: string): boolean {
+  return /^(\[[0-9a-f:.]+\]|[a-z0-9.-]+)(:\d{1,5})?$/i.test(host);
+}
+
+function isInternalRenderHost(host: string): boolean {
+  return host.includes('localhost:10000') || host.includes('127.0.0.1:10000');
+}
+
+function isLocalHost(host: string): boolean {
+  const name = host.replace(/:\d+$/, '').toLowerCase();
+  return name === 'localhost' || name === '127.0.0.1' || name === '[::1]';
+}
+
 /**
  * Accurately determines the public URL of the application,
  * avoiding internal container ports like localhost:10000 on Render.com.
@@ -7,11 +25,18 @@ import { NextRequest } from 'next/server';
 export function getPublicBaseUrl(req?: NextRequest): string {
   // 1. Check Reverse Proxy forwarded headers (Render, Cloudflare, etc.)
   if (req) {
-    const forwardedHost = req.headers.get('x-forwarded-host');
-    const host = forwardedHost || req.headers.get('host');
-    const proto = req.headers.get('x-forwarded-proto') || 'https';
+    const host = [req.headers.get('x-forwarded-host'), req.headers.get('host')]
+      .map(firstHeaderValue)
+      .find((candidate) => candidate && isValidHost(candidate) && !isInternalRenderHost(candidate));
 
-    if (host && !host.includes('localhost:10000') && !host.includes('127.0.0.1:10000')) {
+    if (host) {
+      const forwardedProto = firstHeaderValue(req.headers.get('x-forwarded-proto')).toLowerCase();
+      const proto =
+        forwardedProto === 'http' || forwardedProto === 'https'
+          ? forwardedProto
+          : isLocalHost(host)
+            ? 'http'
+            : 'https';
       return `${proto}://${host}`;
     }
   }
